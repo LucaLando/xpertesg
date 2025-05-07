@@ -123,7 +123,7 @@ if st.session_state.usuario:
             }
         ]
     
-        df_rent = pd.read_csv("rentabilidade_fundos_esg60m.csv")
+        df_rent = pd.read_csv("rentabilidade_fundos_esg_60m.csv")
     
         for p in produtos_esg:
             with st.expander(p["nome"]):
