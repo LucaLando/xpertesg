@@ -6,6 +6,8 @@ import openai
 import os
 import json
 
+pip install --upgrade openai
+
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
 
@@ -57,14 +59,20 @@ if st.session_state.usuario:
 
     elif aba == "🗣️ Chat com o Fábio":
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
+
         with st.expander("🔐 Configurar Chave da API OpenAI"):
             st.session_state.api_key = st.text_input("Cole aqui sua API Key:", type="password")
+
         prompt_usuario = st.text_area("Digite sua pergunta para o Fábio:")
+
         if st.button("Enviar") and prompt_usuario and st.session_state.api_key:
             st.session_state.mensagens.append({"role": "user", "content": prompt_usuario})
-            openai.api_key = st.session_state.api_key
+
             try:
-                resposta = openai.ChatCompletion.create(
+                import openai
+                client = openai.OpenAI(api_key=st.session_state.api_key)
+
+                resposta = client.chat.completions.create(
                     model="gpt-4",
                     messages=[
                         {"role": "system", "content": "Você é o Fábio, um especialista em investimentos com foco em ESG. Responda como um assistente da XP Inc., sempre com foco consultivo, educacional e técnico para assessores de investimento."}
@@ -72,12 +80,15 @@ if st.session_state.usuario:
                     temperature=0.7,
                     max_tokens=700
                 )
+
                 resposta_fabio = resposta.choices[0].message.content
                 st.session_state.mensagens.append({"role": "assistant", "content": resposta_fabio})
                 salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+
             except Exception as e:
                 resposta_fabio = f"Erro na chamada à API: {str(e)}"
                 st.session_state.mensagens.append({"role": "assistant", "content": resposta_fabio})
+
         for msg in st.session_state.mensagens:
             st.markdown(f"**{'Você' if msg['role']=='user' else 'Fábio'}:** {msg['content']}")
 
