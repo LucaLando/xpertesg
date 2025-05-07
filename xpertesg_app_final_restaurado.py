@@ -33,7 +33,7 @@ def salvar_historico(usuario, mensagens):
         json.dump(mensagens, f, ensure_ascii=False, indent=2)
 
 st.sidebar.markdown("## 👤 Login do Assessor")
-usuario_input = st.sidebar.text_input("Digite seu nome de usuário (ex: luca.lando):")
+usuario_input = st.sidebar.text_input("Digite seu nome de usuário")
 if st.sidebar.button("Entrar") and usuario_input:
     st.session_state.usuario = usuario_input
     st.session_state.mensagens = carregar_historico(usuario_input)
