@@ -160,32 +160,31 @@ if st.session_state.usuario:
     elif aba == "💡 Alocação Inteligente":
         st.subheader("💡 Alocação Inteligente com ESG")
     
-        # Seleção de cliente real da base
+        # Seleção de cliente da base
         cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
         cliente_info = df[df["nome"] == cliente_selecionado].iloc[0]
         perfil = cliente_info["perfil_risco"]
-    
         st.markdown(f"**Perfil de Investidor XP:** {perfil}")
     
-        # Simula carteira com base no perfil de risco
+        # Definições de alocação padrão por perfil
         if perfil == "Conservador":
-            carteira_atual = [
-                {"produto": "Tesouro IPCA 2026", "categoria": "Renda Fixa", "risco": 3, "valor": 50000, "vence_em_dias": 30},
-                {"produto": "Fundo Conservador XP", "categoria": "Multimercado", "risco": 5, "valor": 30000, "vence_em_dias": 150},
-                {"produto": "Caixa", "categoria": "Caixa", "risco": 1, "valor": 20000, "vence_em_dias": 0}
-            ]
+            carteira_base = {
+                "Renda Fixa": 50000,
+                "Multimercado": 30000,
+                "Caixa": 20000
+            }
         elif perfil == "Moderado":
-            carteira_atual = [
-                {"produto": "Fundo Alpha Multimercado", "categoria": "Multimercado", "risco": 7, "valor": 40000, "vence_em_dias": 180},
-                {"produto": "Tesouro Selic", "categoria": "Renda Fixa", "risco": 3, "valor": 30000, "vence_em_dias": 60},
-                {"produto": "ETF BRAX11", "categoria": "ETF", "risco": 10, "valor": 30000, "vence_em_dias": 365}
-            ]
+            carteira_base = {
+                "Multimercado": 40000,
+                "Renda Fixa": 30000,
+                "ETF": 30000
+            }
         else:  # Agressivo
-            carteira_atual = [
-                {"produto": "Fundo RV XP Tech", "categoria": "Renda Variável", "risco": 15, "valor": 40000, "vence_em_dias": 90},
-                {"produto": "ETF NASD11", "categoria": "ETF", "risco": 10, "valor": 35000, "vence_em_dias": 120},
-                {"produto": "Fundo Macro XP", "categoria": "Multimercado", "risco": 7, "valor": 25000, "vence_em_dias": 45}
-            ]
+            carteira_base = {
+                "Renda Variável": 40000,
+                "ETF": 35000,
+                "Multimercado": 25000
+            }
     
         # Produtos ESG disponíveis
         produtos_esg = [
@@ -195,43 +194,46 @@ if st.session_state.usuario:
             {"nome": "Fundo XP Verde Ações", "categoria": "Renda Variável", "risco": 15}
         ]
     
-        # Avaliação de substituições ESG
+        # Simular substituições parciais
+        carteira_recomendada = []
         substituicoes = []
-        nova_carteira = []
     
-        for ativo in carteira_atual:
-            substituido = False
-            for esg in produtos_esg:
-                if esg["categoria"] == ativo["categoria"] and esg["risco"] == ativo["risco"] and ativo["vence_em_dias"] <= 90:
-                    substituicoes.append({
-                        "Produto Atual": ativo["produto"],
-                        "Categoria": ativo["categoria"],
-                        "Risco": ativo["risco"],
-                        "Produto ESG Sugerido": esg["nome"],
-                        "Motivo": "Vencimento próximo e risco compatível"
-                    })
-                    nova_carteira.append({"Produto": esg["nome"], "Valor": ativo["valor"]})
-                    substituido = True
-                    break
-            if not substituido:
-                nova_carteira.append({"Produto": ativo["produto"], "Valor": ativo["valor"]})
+        for categoria, valor in carteira_base.items():
+            if categoria in ["Caixa"]:
+                carteira_recomendada.append({"Produto": categoria, "Valor": valor})
+                continue
     
-        # Gráficos de pizza
+            esg_produto = next((p for p in produtos_esg if p["categoria"] == categoria), None)
+            if esg_produto:
+                valor_esg = valor * 0.5
+                valor_tradicional = valor * 0.5
+                carteira_recomendada.append({"Produto": f"{categoria} Tradicional", "Valor": valor_tradicional})
+                carteira_recomendada.append({"Produto": f"{esg_produto['nome']}", "Valor": valor_esg})
+                substituicoes.append({
+                    "Categoria": categoria,
+                    "ESG Sugerido": esg_produto["nome"],
+                    "Porcentagem ESG": "50%",
+                    "Motivo": "Risco compatível e disponível ESG na mesma classe"
+                })
+            else:
+                carteira_recomendada.append({"Produto": categoria, "Valor": valor})
+    
+        # Gráficos
         col1, col2 = st.columns(2)
+    
         with col1:
-            df_atual = pd.DataFrame([{"Produto": a["produto"], "Valor": a["valor"]} for a in carteira_atual])
-            fig1 = px.pie(df_atual, names='Produto', values='Valor', title="Carteira Atual")
+            df_atual = pd.DataFrame({"Produto": list(carteira_base.keys()), "Valor": list(carteira_base.values())})
+            fig1 = px.pie(df_atual, names='Produto', values='Valor', title="Carteira Atual por Categoria")
             st.plotly_chart(fig1, use_container_width=True)
     
         with col2:
-            df_nova = pd.DataFrame(nova_carteira)
+            df_nova = pd.DataFrame(carteira_recomendada)
             fig2 = px.pie(df_nova, names='Produto', values='Valor', title="Carteira Recomendada com ESG")
             st.plotly_chart(fig2, use_container_width=True)
     
         # Tabela de substituições
         if substituicoes:
             st.markdown("### 📌 Substituições Recomendadas")
-            df_subs = pd.DataFrame(substituicoes)
-            st.dataframe(df_subs)
+            st.dataframe(pd.DataFrame(substituicoes))
         else:
-            st.info("Nenhuma substituição ESG recomendada no momento com base na carteira e vencimentos.")
+            st.info("Nenhuma substituição ESG recomendada no momento.")
