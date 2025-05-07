@@ -122,6 +122,9 @@ if st.session_state.usuario:
                 "lamina": "https://conteudos.xpi.com.br/previdencia-privada/jgp-acoes-100-prev-xp-seg-fic-fia/"
             }
         ]
+    
+        df_rent = pd.read_csv("rentabilidade_fundos_esg.csv")
+    
         for p in produtos_esg:
             with st.expander(p["nome"]):
                 st.markdown(f"**Tipo:** {p['tipo']}")
@@ -131,6 +134,32 @@ if st.session_state.usuario:
                     st.markdown(f"[📄 Acessar Lâmina do Produto](./{p['arquivo']})")
                 elif "lamina" in p:
                     st.markdown(f"[📄 Acessar Lâmina do Produto]({p['lamina']})")
+    
+                # Gráfico de rentabilidade acumulada e % retorno
+                if p["nome"] in df_rent.columns:
+                    df_plot = df_rent[["Data", p["nome"]]].copy()
+                    df_plot["% Retorno"] = (df_plot[p["nome"]] / df_plot[p["nome"]].iloc[0] - 1) * 100
+    
+                    fig_rent = px.line(
+                        df_plot,
+                        x="Data",
+                        y=[p["nome"], "% Retorno"],
+                        title="Simulação de Rentabilidade Acumulada",
+                        labels={
+                            "value": "Valor",
+                            "variable": "Métrica",
+                            "Data": "Data"
+                        },
+                        line_shape="linear"
+                    )
+    
+                    fig_rent.update_traces(line=dict(width=3))
+                    fig_rent.for_each_trace(
+                        lambda t: t.update(line_color="#FFFB00") if t.name == p["nome"] else t.update(line_color="#888888", line_dash="dot")
+                    )
+                    st.plotly_chart(fig_rent, use_container_width=True)
+                else:
+                    st.info("Simulação de rentabilidade não disponível para este fundo.")
 
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
