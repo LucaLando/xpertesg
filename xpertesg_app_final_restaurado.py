@@ -124,18 +124,15 @@ if st.session_state.usuario:
 
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
-        col1, col2 = st.columns(2)
+    
+        col1, _ = st.columns(2)
         with col1:
             fig1 = px.histogram(df, x="faixa_propensao", color="faixa_propensao",
                                 title="Distribuição por Faixa ESG",
                                 color_discrete_sequence=["#FECB00"])
             fig1.update_traces(marker_line_color="black", marker_line_width=1)
             st.plotly_chart(fig1, use_container_width=True)
-        with col2:
-            fig2 = px.box(df, x="perfil_risco", y="propensao_esg", color="perfil_risco",
-                          title="Propensão ESG por Perfil",
-                          color_discrete_sequence=px.colors.qualitative.Safe)
-            st.plotly_chart(fig2, use_container_width=True)
+    
         col3, col4 = st.columns(2)
         with col3:
             st.markdown("### 🔝 Top 5 - Baixa Propensão")
@@ -143,10 +140,12 @@ if st.session_state.usuario:
         with col4:
             st.markdown("### 🔝 Top 5 - Média Propensão")
             st.dataframe(top_media[["nome", "propensao_esg", "perfil_risco"]])
+        
         st.markdown("### 🔝 Top 5 - Alta Propensão")
         st.dataframe(top_alta[["nome", "propensao_esg", "perfil_risco"]])
-                # NOVOS GRÁFICOS E INSIGHTS ESG
-
+    
+        # NOVOS GRÁFICOS E INSIGHTS ESG
+    
         st.markdown("### ⏳ Clientes com ativos vencendo em até 30 dias")
         if "vence_em_dias" in df.columns:
             vencendo_30 = df[df["vence_em_dias"] <= 30]
@@ -160,7 +159,7 @@ if st.session_state.usuario:
             st.plotly_chart(fig_vencendo, use_container_width=True)
         else:
             st.warning("Coluna 'vence_em_dias' não encontrada na base.")
-
+    
         st.markdown("### 📊 Clientes por Categoria de Produto Atual (simulada)")
         if "categoria_produto" in df.columns:
             fig_categoria = px.histogram(
@@ -173,14 +172,14 @@ if st.session_state.usuario:
             st.plotly_chart(fig_categoria, use_container_width=True)
         else:
             st.warning("Coluna 'categoria_produto' não encontrada na base.")
-
+    
         st.markdown("### 🚫 Oportunidade ESG Inexplorada")
         if "produtos_esg" in df.columns:
             inexplorados = df[(df["faixa_propensao"] == "Alta") & (df["produtos_esg"] == 0)]
             st.metric(label="Clientes com Alta Propensão e Nenhum Produto ESG", value=len(inexplorados))
         else:
             st.warning("Coluna 'produtos_esg' não encontrada na base.")
-
+    
         st.markdown("### 🔥 Heatmap ESG: Propensão x Categoria x Valor em Caixa")
         if all(col in df.columns for col in ["propensao_esg", "categoria_produto", "valor_em_caixa"]):
             heatmap_df = df.copy()
@@ -202,7 +201,6 @@ if st.session_state.usuario:
             st.plotly_chart(fig_heat, use_container_width=True)
         else:
             st.warning("Colunas necessárias para o Heatmap não estão completas.")
-
 
     elif aba == "📌 Recomendações":
         st.subheader("📌 Recomendações por Faixa ESG")
