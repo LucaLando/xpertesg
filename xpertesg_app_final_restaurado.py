@@ -71,7 +71,7 @@ if st.session_state.usuario:
                 client = openai.OpenAI(api_key=st.session_state.api_key)
 
                 resposta = client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "Você é o Fábio, um especialista em investimentos com foco em ESG. Responda como um assistente da XP Inc., sempre com foco consultivo, educacional e técnico para assessores de investimento."}
                     ] + st.session_state.mensagens,
