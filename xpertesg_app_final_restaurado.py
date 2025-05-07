@@ -321,15 +321,15 @@ if st.session_state.usuario:
         # Gráfico de linha: evolução individual
         st.markdown("### 📈 Alocação Acumulada ao Longo do Tempo")
         fig_crescimento = px.line(
-        df_campanha,
-        x="Data",
-        y="Assessor",
-        title="Alocação ESG - Assessor",
-        markers=True,
-        labels={"Assessor": "Valor Acumulado (R$)"},
-        line_shape="linear"
-    )
-    fig_crescimento.update_traces(line=dict(color="#FFFB00", width=3))
+            df_campanha,
+            x="Data",
+            y="Assessor",
+            title="Alocação ESG - Assessor",
+            markers=True,
+            labels={"Assessor": "Valor Acumulado (R$)"},
+            line_shape="linear"
+        )
+        fig_crescimento.update_traces(line=dict(color="#FFFB00", width=3))
 
         st.plotly_chart(fig_crescimento, use_container_width=True)
     
