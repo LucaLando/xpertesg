@@ -47,7 +47,8 @@ if st.session_state.usuario:
         "📦 Produtos ESG",
         "📈 Dashboards",
         "📌 Recomendações",
-        "💡 Alocação Inteligente"
+        "💡 Alocação Inteligente",
+        "📢 Campanha"
     ])
 
     if aba == "👥 Clientes":
