@@ -145,6 +145,64 @@ if st.session_state.usuario:
             st.dataframe(top_media[["nome", "propensao_esg", "perfil_risco"]])
         st.markdown("### 🔝 Top 5 - Alta Propensão")
         st.dataframe(top_alta[["nome", "propensao_esg", "perfil_risco"]])
+                # NOVOS GRÁFICOS E INSIGHTS ESG
+
+        st.markdown("### ⏳ Clientes com ativos vencendo em até 30 dias")
+        if "vence_em_dias" in df.columns:
+            vencendo_30 = df[df["vence_em_dias"] <= 30]
+            fig_vencendo = px.histogram(
+                vencendo_30,
+                x="faixa_propensao",
+                color="perfil_risco",
+                title="Faixa ESG dos Clientes com Ativos Próximos do Vencimento",
+                color_discrete_sequence=px.colors.qualitative.Vivid
+            )
+            st.plotly_chart(fig_vencendo, use_container_width=True)
+        else:
+            st.warning("Coluna 'vence_em_dias' não encontrada na base.")
+
+        st.markdown("### 📊 Clientes por Categoria de Produto Atual (simulada)")
+        if "categoria_produto" in df.columns:
+            fig_categoria = px.histogram(
+                df,
+                x="categoria_produto",
+                color="faixa_propensao",
+                title="Distribuição por Categoria de Produto",
+                color_discrete_sequence=px.colors.qualitative.Prism
+            )
+            st.plotly_chart(fig_categoria, use_container_width=True)
+        else:
+            st.warning("Coluna 'categoria_produto' não encontrada na base.")
+
+        st.markdown("### 🚫 Oportunidade ESG Inexplorada")
+        if "produtos_esg" in df.columns:
+            inexplorados = df[(df["faixa_propensao"] == "Alta") & (df["produtos_esg"] == 0)]
+            st.metric(label="Clientes com Alta Propensão e Nenhum Produto ESG", value=len(inexplorados))
+        else:
+            st.warning("Coluna 'produtos_esg' não encontrada na base.")
+
+        st.markdown("### 🔥 Heatmap ESG: Propensão x Categoria x Valor em Caixa")
+        if all(col in df.columns for col in ["propensao_esg", "categoria_produto", "valor_em_caixa"]):
+            heatmap_df = df.copy()
+            heatmap_df["prop_bin"] = pd.cut(
+                heatmap_df["propensao_esg"],
+                bins=[0, 0.4, 0.75, 1.0],
+                labels=["Baixa", "Média", "Alta"],
+                include_lowest=True
+            )
+            heat = heatmap_df.groupby(["prop_bin", "categoria_produto"])["valor_em_caixa"].sum().reset_index()
+            fig_heat = px.density_heatmap(
+                heat,
+                x="categoria_produto",
+                y="prop_bin",
+                z="valor_em_caixa",
+                color_continuous_scale="Viridis",
+                title="Heatmap ESG: Volume em Caixa por Propensão e Categoria"
+            )
+            st.plotly_chart(fig_heat, use_container_width=True)
+        else:
+            st.warning("Colunas necessárias para o Heatmap não estão completas.")
+
 
     elif aba == "📌 Recomendações":
         st.subheader("📌 Recomendações por Faixa ESG")
