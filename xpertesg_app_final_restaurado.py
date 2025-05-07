@@ -41,7 +41,7 @@ if st.sidebar.button("Entrar") and usuario_input:
 
 if st.session_state.usuario:
     st.title(f"📊 XPertESG – Assessor: {st.session_state.usuario}")
-    aba = st.sidebar.button("📂 Escolha uma seção:", [
+    aba = st.sidebar.radio("📂 Escolha uma seção:", [
         "👥 Clientes",
         "🗣️ Chat com o Fábio",
         "📦 Produtos ESG",
