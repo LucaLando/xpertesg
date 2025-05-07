@@ -5,6 +5,19 @@ import plotly.express as px
 import openai
 import os
 import json
+import openai
+
+client = openai.OpenAI(api_key="SUA_CHAVE_AQUI")
+
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": "Você é o Fábio..."},
+        {"role": "user", "content": "Qual o melhor fundo ESG?"}
+    ]
+)
+
+resposta_fabio = response.choices[0].message.content
 
 # Config
 st.set_page_config(page_title="XPertESG", layout="wide")
