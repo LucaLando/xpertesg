@@ -160,13 +160,32 @@ if st.session_state.usuario:
     elif aba == "💡 Alocação Inteligente":
         st.subheader("💡 Alocação Inteligente com ESG")
     
-        # Simulação de carteira atual
-        carteira_atual = [
-            {"produto": "Tesouro IPCA 2026", "categoria": "Renda Fixa", "risco": 3, "valor": 25000, "vence_em_dias": 30},
-            {"produto": "Fundo Alpha Multimercado", "categoria": "Multimercado", "risco": 7, "valor": 25000, "vence_em_dias": 180},
-            {"produto": "ETF BRAX11", "categoria": "ETF", "risco": 10, "valor": 25000, "vence_em_dias": 365},
-            {"produto": "Fundo RV XP Tech", "categoria": "Renda Variável", "risco": 15, "valor": 25000, "vence_em_dias": 90}
-        ]
+        # Seleção de cliente real da base
+        cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
+        cliente_info = df[df["nome"] == cliente_selecionado].iloc[0]
+        perfil = cliente_info["perfil_risco"]
+    
+        st.markdown(f"**Perfil de Investidor XP:** {perfil}")
+    
+        # Simula carteira com base no perfil de risco
+        if perfil == "Conservador":
+            carteira_atual = [
+                {"produto": "Tesouro IPCA 2026", "categoria": "Renda Fixa", "risco": 3, "valor": 50000, "vence_em_dias": 30},
+                {"produto": "Fundo Conservador XP", "categoria": "Multimercado", "risco": 5, "valor": 30000, "vence_em_dias": 150},
+                {"produto": "Caixa", "categoria": "Caixa", "risco": 1, "valor": 20000, "vence_em_dias": 0}
+            ]
+        elif perfil == "Moderado":
+            carteira_atual = [
+                {"produto": "Fundo Alpha Multimercado", "categoria": "Multimercado", "risco": 7, "valor": 40000, "vence_em_dias": 180},
+                {"produto": "Tesouro Selic", "categoria": "Renda Fixa", "risco": 3, "valor": 30000, "vence_em_dias": 60},
+                {"produto": "ETF BRAX11", "categoria": "ETF", "risco": 10, "valor": 30000, "vence_em_dias": 365}
+            ]
+        else:  # Agressivo
+            carteira_atual = [
+                {"produto": "Fundo RV XP Tech", "categoria": "Renda Variável", "risco": 15, "valor": 40000, "vence_em_dias": 90},
+                {"produto": "ETF NASD11", "categoria": "ETF", "risco": 10, "valor": 35000, "vence_em_dias": 120},
+                {"produto": "Fundo Macro XP", "categoria": "Multimercado", "risco": 7, "valor": 25000, "vence_em_dias": 45}
+            ]
     
         # Produtos ESG disponíveis
         produtos_esg = [
@@ -176,7 +195,7 @@ if st.session_state.usuario:
             {"nome": "Fundo XP Verde Ações", "categoria": "Renda Variável", "risco": 15}
         ]
     
-        # Substituições recomendadas
+        # Avaliação de substituições ESG
         substituicoes = []
         nova_carteira = []
     
@@ -197,7 +216,7 @@ if st.session_state.usuario:
             if not substituido:
                 nova_carteira.append({"Produto": ativo["produto"], "Valor": ativo["valor"]})
     
-        # Visualização com gráficos de pizza
+        # Gráficos de pizza
         col1, col2 = st.columns(2)
         with col1:
             df_atual = pd.DataFrame([{"Produto": a["produto"], "Valor": a["valor"]} for a in carteira_atual])
