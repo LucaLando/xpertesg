@@ -6,8 +6,6 @@ import openai
 import os
 import json
 
-pip install --upgrade openai
-
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
 
