@@ -159,31 +159,60 @@ if st.session_state.usuario:
 
     elif aba == "💡 Alocação Inteligente":
         st.subheader("💡 Alocação Inteligente com ESG")
-        cliente_escolhido = st.selectbox("Selecione um cliente:", df["nome"])
-        cliente_info = df[df["nome"] == cliente_escolhido].iloc[0]
-        perfil = cliente_info["perfil_risco"]
-
-        carteira_atual = {
-            "Renda Fixa": 40 if perfil == "Conservador" else 25,
-            "Fundos Multimercado": 30 if perfil == "Moderado" else 20,
-            "Ações": 20 if perfil == "Agressivo" else 10,
-            "Caixa": 10
-        }
-
-        substituiveis = {
-            "Renda Fixa": "XP Essencial ESG",
-            "Fundos Multimercado": "XP Impacto Social",
-            "Ações": "XP Verde Ações"
-        }
-
-        nova_carteira = {substituiveis.get(k, k): v for k, v in carteira_atual.items()}
-
-        st.markdown("#### 📊 Carteira Atual")
-        fig_atual = px.pie(names=list(carteira_atual.keys()), values=list(carteira_atual.values()),
-                           title="Carteira Atual", color_discrete_sequence=px.colors.sequential.Oranges)
-        st.plotly_chart(fig_atual, use_container_width=True)
-
-        st.markdown("#### ♻️ Carteira ESG Recomendada")
-        fig_recomendada = px.pie(names=list(nova_carteira.keys()), values=list(nova_carteira.values()),
-                                 title="Carteira Recomendada", color_discrete_sequence=px.colors.sequential.Greens)
-        st.plotly_chart(fig_recomendada, use_container_width=True)
+    
+        # Simulação de carteira atual
+        carteira_atual = [
+            {"produto": "Tesouro IPCA 2026", "categoria": "Renda Fixa", "risco": 3, "valor": 25000, "vence_em_dias": 30},
+            {"produto": "Fundo Alpha Multimercado", "categoria": "Multimercado", "risco": 7, "valor": 25000, "vence_em_dias": 180},
+            {"produto": "ETF BRAX11", "categoria": "ETF", "risco": 10, "valor": 25000, "vence_em_dias": 365},
+            {"produto": "Fundo RV XP Tech", "categoria": "Renda Variável", "risco": 15, "valor": 25000, "vence_em_dias": 90}
+        ]
+    
+        # Produtos ESG disponíveis
+        produtos_esg = [
+            {"nome": "Fundo XP Essencial ESG", "categoria": "Renda Fixa", "risco": 3},
+            {"nome": "Pandhora ESG Prev", "categoria": "Multimercado", "risco": 7},
+            {"nome": "ETF XP Sustentável", "categoria": "ETF", "risco": 10},
+            {"nome": "Fundo XP Verde Ações", "categoria": "Renda Variável", "risco": 15}
+        ]
+    
+        # Substituições recomendadas
+        substituicoes = []
+        nova_carteira = []
+    
+        for ativo in carteira_atual:
+            substituido = False
+            for esg in produtos_esg:
+                if esg["categoria"] == ativo["categoria"] and esg["risco"] == ativo["risco"] and ativo["vence_em_dias"] <= 90:
+                    substituicoes.append({
+                        "Produto Atual": ativo["produto"],
+                        "Categoria": ativo["categoria"],
+                        "Risco": ativo["risco"],
+                        "Produto ESG Sugerido": esg["nome"],
+                        "Motivo": "Vencimento próximo e risco compatível"
+                    })
+                    nova_carteira.append({"Produto": esg["nome"], "Valor": ativo["valor"]})
+                    substituido = True
+                    break
+            if not substituido:
+                nova_carteira.append({"Produto": ativo["produto"], "Valor": ativo["valor"]})
+    
+        # Visualização com gráficos de pizza
+        col1, col2 = st.columns(2)
+        with col1:
+            df_atual = pd.DataFrame([{"Produto": a["produto"], "Valor": a["valor"]} for a in carteira_atual])
+            fig1 = px.pie(df_atual, names='Produto', values='Valor', title="Carteira Atual")
+            st.plotly_chart(fig1, use_container_width=True)
+    
+        with col2:
+            df_nova = pd.DataFrame(nova_carteira)
+            fig2 = px.pie(df_nova, names='Produto', values='Valor', title="Carteira Recomendada com ESG")
+            st.plotly_chart(fig2, use_container_width=True)
+    
+        # Tabela de substituições
+        if substituicoes:
+            st.markdown("### 📌 Substituições Recomendadas")
+            df_subs = pd.DataFrame(substituicoes)
+            st.dataframe(df_subs)
+        else:
+            st.info("Nenhuma substituição ESG recomendada no momento com base na carteira e vencimentos.")
