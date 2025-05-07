@@ -134,10 +134,10 @@ if st.session_state.usuario:
             st.plotly_chart(fig1, use_container_width=True)
     
         col3, col4 = st.columns(2)
-        with col2:
+        with col3:
             st.markdown("### 🔝 Top 5 - Baixa Propensão")
             st.dataframe(top_baixa[["nome", "propensao_esg", "perfil_risco"]])
-        with col3:
+        with col4:
             st.markdown("### 🔝 Top 5 - Média Propensão")
             st.dataframe(top_media[["nome", "propensao_esg", "perfil_risco"]])
         
