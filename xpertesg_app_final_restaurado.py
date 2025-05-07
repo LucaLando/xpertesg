@@ -10,7 +10,7 @@ st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
 
 # Dados simulados
-df = pd.read_csv("base_clientes_xpertesg.csv")
+df = pd.read_csv("base_clientes_xpertesg_1000.csv")
 df["faixa_propensao"] = pd.cut(df["propensao_esg"], bins=[0, 0.4, 0.75, 1.0], labels=["Baixa", "Média", "Alta"])
 
 top_baixa = df[df["faixa_propensao"] == "Baixa"].nlargest(5, "propensao_esg")
