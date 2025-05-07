@@ -123,7 +123,7 @@ if st.session_state.usuario:
             }
         ]
     
-        df_rent = pd.read_csv("rentabilidade_fundos_esg.csv")
+        df_rent = pd.read_csv("rentabilidade_fundos_esg60m.csv")
     
         for p in produtos_esg:
             with st.expander(p["nome"]):
@@ -358,7 +358,7 @@ if st.session_state.usuario:
             labels={"Assessor": "Valor Acumulado (R$)"},
             line_shape="linear"
         )
-        fig_crescimento.update_traces(line=dict(color="#FFFB00", width=3))
+        fig_crescimento.update_traces(line=dict(color="#FFFF00", width=3))
 
         st.plotly_chart(fig_crescimento, use_container_width=True)
     
