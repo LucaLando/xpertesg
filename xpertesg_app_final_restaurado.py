@@ -320,7 +320,7 @@ if st.session_state.usuario:
     
         # Gráfico de linha: evolução individual
         st.markdown("### 📈 Alocação Acumulada ao Longo do Tempo")
-        fig_crescimento = px.line(df_campanha, x="Data", y="Assessor", title="Alocação ESG - Assessor",
+        fig_crescimento = px.line(df_campanha, x="Data", y="Assessor", color= "FFFF00" title="Alocação ESG - Assessor",
                                    markers=True, labels={"Assessor": "Valor Acumulado (R$)"})
         st.plotly_chart(fig_crescimento, use_container_width=True)
     
