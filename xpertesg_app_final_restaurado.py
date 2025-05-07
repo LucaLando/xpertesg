@@ -83,13 +83,17 @@ if st.session_state.usuario:
     elif aba == "📦 Produtos ESG":
         st.subheader("🌱 Produtos ESG disponíveis")
         produtos_esg = [
-            {"nome": "Fundo XP Essencial ESG", "tipo": "Renda Fixa", "risco": "Baixo", "taxa": "0,9% a.a."},
-            {"nome": "ETF XP Sustentável", "tipo": "ETF", "risco": "Médio", "taxa": "0,3% a.a."},
-            {"nome": "Fundo XP Verde Ações", "tipo": "Ações", "risco": "Alto", "taxa": "1,2% a.a."},
-            {"nome": "Fundo XP Impacto Social", "tipo": "Multimercado", "risco": "Médio", "taxa": "1,0% a.a."}
+            {"nome": "Fundo XP Essencial ESG", "tipo": "Renda Fixa", "risco": "Baixo", "taxa": "0,9% a.a.", "arquivo": "lamina_xp_essencial.pdf"},
+            {"nome": "ETF XP Sustentável", "tipo": "ETF", "risco": "Médio", "taxa": "0,3% a.a.", "arquivo": "lamina_xp_etf.pdf"},
+            {"nome": "Fundo XP Verde Ações", "tipo": "Ações", "risco": "Alto", "taxa": "1,2% a.a.", "arquivo": "lamina_xp_verde.pdf"},
+            {"nome": "Fundo XP Impacto Social", "tipo": "Multimercado", "risco": "Médio", "taxa": "1,0% a.a.", "arquivo": "lamina_xp_impacto.pdf"}
         ]
-        df_prod = pd.DataFrame(produtos_esg)
-        st.table(df_prod)
+        for p in produtos_esg:
+            with st.expander(p["nome"]):
+                st.markdown(f"**Tipo:** {p['tipo']}")
+                st.markdown(f"**Risco:** {p['risco']}")
+                st.markdown(f"**Taxa de administração:** {p['taxa']}")
+                st.markdown(f"[📄 Acessar Lâmina do Produto](./{p['arquivo']})")
 
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
