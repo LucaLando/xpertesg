@@ -7,7 +7,7 @@ import os
 import json
 import openai
 
-client = openai.OpenAI(api_key="SUA_CHAVE_AQUI")
+client = openai.OpenAI(api_key="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")
 
 response = client.chat.completions.create(
     model="gpt-4",
