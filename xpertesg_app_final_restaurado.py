@@ -87,37 +87,40 @@ if st.session_state.usuario:
             {"nome": "ETF XP Sustentável", "tipo": "ETF", "risco": "Médio", "taxa": "0,3% a.a.", "arquivo": "lamina_xp_etf.pdf"},
             {"nome": "Fundo XP Verde Ações", "tipo": "Ações", "risco": "Alto", "taxa": "1,2% a.a.", "arquivo": "lamina_xp_verde.pdf"},
             {"nome": "Fundo XP Impacto Social", "tipo": "Multimercado", "risco": "Médio", "taxa": "1,0% a.a.", "arquivo": "lamina_xp_impacto.pdf"},
-        {
-            "nome": "Trend ESG Global Dólar FIM",
-            "tipo": "Multimercado Internacional",
-            "risco": "Médio",
-            "taxa": "0,5% a.a.",
-            "descricao": "Fundo indexado que investe em ETFs internacionais com foco em empresas reconhecidas por boas práticas ESG.",
-            "lamina": "https://conteudos.xpi.com.br/previdencia-privada/relatorios/pandhora-esg-prev-o-novo-fundo-de-acoes-da-pandhora/"
-        },
-        {
-            "nome": "Pandhora ESG Prev",
-            "tipo": "Previdência – Ações Long Bias",
-            "risco": "Alto",
-            "taxa": "1,5% a.a.",
-            "descricao": "Fundo de previdência com estratégia Long Bias e filtro ESG, combinando ações, ativos macro e exposição internacional.",
-            "lamina": "https://conteudos.xpi.com.br/previdencia-privada/relatorios/pandhora-esg-prev-o-novo-fundo-de-acoes-da-pandhora/"
-        },
-        {
-            "nome": "JGP Ações 100 Prev XP Seguros FIC FIA",
-            "tipo": "Previdência – Ações",
-            "risco": "Alto",
-            "taxa": "2,0% a.a.",
-            "descricao": "Fundo de ações com foco em empresas sustentáveis, disponível na plataforma de previdência da XP.",
-            "lamina": "https://conteudos.xpi.com.br/previdencia-privada/jgp-acoes-100-prev-xp-seg-fic-fia/"
-        }
+            {
+                "nome": "Trend ESG Global Dólar FIM",
+                "tipo": "Multimercado Internacional",
+                "risco": "Médio",
+                "taxa": "0,5% a.a.",
+                "descricao": "Fundo indexado que investe em ETFs internacionais com foco em empresas reconhecidas por boas práticas ESG.",
+                "lamina": "https://conteudos.xpi.com.br/previdencia-privada/relatorios/pandhora-esg-prev-o-novo-fundo-de-acoes-da-pandhora/"
+            },
+            {
+                "nome": "Pandhora ESG Prev",
+                "tipo": "Previdência – Ações Long Bias",
+                "risco": "Alto",
+                "taxa": "1,5% a.a.",
+                "descricao": "Fundo de previdência com estratégia Long Bias e filtro ESG, combinando ações, ativos macro e exposição internacional.",
+                "lamina": "https://conteudos.xpi.com.br/previdencia-privada/relatorios/pandhora-esg-prev-o-novo-fundo-de-acoes-da-pandhora/"
+            },
+            {
+                "nome": "JGP Ações 100 Prev XP Seguros FIC FIA",
+                "tipo": "Previdência – Ações",
+                "risco": "Alto",
+                "taxa": "2,0% a.a.",
+                "descricao": "Fundo de ações com foco em empresas sustentáveis, disponível na plataforma de previdência da XP.",
+                "lamina": "https://conteudos.xpi.com.br/previdencia-privada/jgp-acoes-100-prev-xp-seg-fic-fia/"
+            }
         ]
         for p in produtos_esg:
             with st.expander(p["nome"]):
                 st.markdown(f"**Tipo:** {p['tipo']}")
                 st.markdown(f"**Risco:** {p['risco']}")
                 st.markdown(f"**Taxa de administração:** {p['taxa']}")
-                st.markdown(f"[📄 Acessar Lâmina do Produto](./{p['arquivo']})")
+                if "arquivo" in p:
+                    st.markdown(f"[📄 Acessar Lâmina do Produto](./{p['arquivo']})")
+                elif "lamina" in p:
+                    st.markdown(f"[📄 Acessar Lâmina do Produto]({p['lamina']})")
 
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
