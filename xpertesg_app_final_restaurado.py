@@ -11,6 +11,12 @@ COR_XP = "#FECB00"
 
 # Dados simulados
 df = pd.read_csv("base_clientes_xpertesg_1000.csv")
+# Garante colunas mínimas para o gráfico de dispersão
+if "nome" not in df.columns:
+    df["nome"] = [f"Cliente {i}" for i in range(len(df))]
+
+if "ValorEmCaixa" not in df.columns:
+    df["ValorEmCaixa"] = np.random.uniform(1000, 200000, len(df))  # ou substitua por dados reais
 df["faixa_propensao"] = pd.cut(df["propensao_esg"], bins=[0, 0.4, 0.75, 1.0], labels=["Baixa", "Média", "Alta"])
 
 top_baixa = df[df["faixa_propensao"] == "Baixa"].nlargest(5, "propensao_esg")
