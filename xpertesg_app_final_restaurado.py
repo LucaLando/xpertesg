@@ -245,8 +245,8 @@ if st.session_state.usuario:
         if "categoria_produto" in df.columns:
             fig_categoria = px.histogram(
                 df,
-                x="Categoria de Produto",
-                color="Propensão ESG",
+                x="categoria_produto",
+                color="faixa_propensao",
                 title="Distribuição por Categoria de Produto",
                  color_discrete_map={
                     "Alta": ALTO_ESG,
