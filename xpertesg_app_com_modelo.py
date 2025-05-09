@@ -10,32 +10,17 @@ import json
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
 
-# Dados simulados
-from ModeloML import simular_base_clientes
-import joblib
-
-# Simular base e aplicar modelo preditivo
+# Simular base de clientes e carregar modelo
 df = simular_base_clientes()
-
 modelo_pipeline = carregar_modelo_pipeline()
 
-# Previsões
+# Aplicar modelo à base
 X = df.drop(columns=["nome"])
 df["propensao_esg"] = modelo_pipeline.predict_proba(X)[:, 1]
 df["faixa_propensao"] = pd.cut(df["propensao_esg"], bins=[0, 0.4, 0.75, 1.0], labels=["Baixa", "Média", "Alta"])
 df["esg_predito"] = modelo_pipeline.predict(X)
 
-
-# Carrega pipeline treinado
-modelo_pipeline = joblib.load("modelo_esg_pipeline.joblib")
-X = df.drop(columns=["nome"])
-
-# Gera predições
-df["propensao_esg"] = modelo_pipeline.predict_proba(X)[:, 1]
-df["faixa_propensao"] = pd.cut(df["propensao_esg"], bins=[0, 0.4, 0.75, 1.0], labels=["Baixa", "Média", "Alta"])
-df["esg_predito"] = modelo_pipeline.predict(X)
-df["faixa_propensao"] = pd.cut(df["propensao_esg"], bins=[0, 0.4, 0.75, 1.0], labels=["Baixa", "Média", "Alta"])
-
+# Clientes Top 5 por faixa
 top_baixa = df[df["faixa_propensao"] == "Baixa"].nlargest(5, "propensao_esg")
 top_media = df[df["faixa_propensao"] == "Média"].nlargest(5, "propensao_esg")
 top_alta = df[df["faixa_propensao"] == "Alta"].nlargest(5, "propensao_esg")
