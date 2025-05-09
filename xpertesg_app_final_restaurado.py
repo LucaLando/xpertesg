@@ -173,7 +173,7 @@ if st.session_state.usuario:
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
     
-        col1, _ = st.columns(2)
+        _, col1, _ = st.columns(3)
         with col1:
             fig1 = px.pie(
                 df,
