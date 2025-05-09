@@ -206,7 +206,7 @@ if st.session_state.usuario:
         if "vence_em_dias" in df.columns:
             vencendo_30 = df[df["vence_em_dias"] <= 30]
     
-            # Contagem agrupada por faixa e perfil
+            # Agrupar por faixa e perfil
             agrupado = vencendo_30.groupby(["faixa_propensao", "perfil_risco"]).size().reset_index(name="Quantidade")
     
             fig_vencendo = px.bar(
@@ -215,8 +215,23 @@ if st.session_state.usuario:
                 y="Quantidade",
                 color="perfil_risco",
                 barmode="group",
-                title="Faixa ESG dos Clientes com Ativos Próximos do Vencimento",
-                color_discrete_sequence=px.colors.qualitative.Vivid
+                title="Clientes com Ativos ESG Próximos do Vencimento",
+                color_discrete_map={
+                    "Conservador": "#00C2C2",  # verde-água
+                    "Moderado": "#FF6B6B",     # vermelho suave
+                    "Agressivo": "#FFD700"     # amarelo XP
+                },
+                labels={"faixa_propensao": "Faixa ESG", "Quantidade": "Quantidade de Clientes"}
+            )
+    
+            fig_vencendo.update_layout(
+                height=450,
+                bargap=0.2,
+                plot_bgcolor="#FFFFFF",
+                paper_bgcolor="#FFFFFF",
+                legend_title_text="Perfil de Risco",
+                title_font_size=18,
+                font=dict(size=13)
             )
     
             st.plotly_chart(fig_vencendo, use_container_width=True)
