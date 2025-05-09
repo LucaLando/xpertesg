@@ -26,7 +26,7 @@ df["esg_predito"] = modelo_pipeline.predict(X).astype(int)
 # Carrega pipeline treinado
 from modelo_ml_integrado import carregar_modelo_pipeline
 modelo_pipeline = carregar_modelo_pipeline()
-X = df.drop(columns=["nome"])
+X = df.copy()
 
 # Gera predições
 df["propensao_esg"] = modelo_pipeline.predict_proba(X)[:, 1]
