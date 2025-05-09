@@ -189,6 +189,50 @@ if st.session_state.usuario:
             fig1.update_traces(textinfo="label+percent")
             st.plotly_chart(fig1, use_container_width=True)
 
+import plotly.graph_objects as go
+
+        st.markdown("### 🚀 Indicador de Alocação ESG")
+        
+        # Simulação: substitua por cálculo real do seu DataFrame
+        capital_total = df["ValorTotalCarteira"].sum()
+        capital_esg = df["ValorAlocadoESG"].sum()
+        percentual_esg = round((capital_esg / capital_total) * 100, 2)
+        
+        # Meta (por exemplo, 10%)
+        meta_percentual = 10
+        
+        # Criar gráfico tipo velocímetro (gauge)
+        fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number+delta",
+            value=percentual_esg,
+            delta={'reference': meta_percentual, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
+            gauge={
+                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkgray"},
+                'bar': {'color': "green", 'thickness': 0.3},
+                'bgcolor': "lightgray",
+                'steps': [
+                    {'range': [0, percentual_esg], 'color': "green"},
+                    {'range': [percentual_esg, 100], 'color': "#D3D3D3"}
+                ],
+                'threshold': {
+                    'line': {'color': "orange", 'width': 4},
+                    'thickness': 0.75,
+                    'value': meta_percentual
+                }
+            },
+            title={'text': "Proporção de Capital Alocado em ESG (%)"}
+        ))
+        
+        fig_gauge.update_layout(
+            height=400,
+            font=dict(size=16),
+            paper_bgcolor="#111111",
+            plot_bgcolor="#111111",
+            font_color="white"
+        )
+        
+        st.plotly_chart(fig_gauge, use_container_width=True)
+
         
         col3, col4, col5 = st.columns(3)
         with col3:
