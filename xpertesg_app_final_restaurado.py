@@ -225,32 +225,10 @@ if st.session_state.usuario:
         else:
             st.warning("Coluna 'produtos_esg' não encontrada na base.")
     
-        st.markdown("### 🔥 Heatmap ESG: Propensão x Categoria x Valor em Caixa")
-        if all(col in df.columns for col in ["propensao_esg", "categoria_produto", "valor_em_caixa"]):
-            heatmap_df = df.copy()
-            heatmap_df["prop_bin"] = pd.cut(
-                heatmap_df["propensao_esg"],
-                bins=[0, 0.4, 0.75, 1.0],
-                labels=["Baixa", "Média", "Alta"],
-                include_lowest=True
-            )
-            heat = heatmap_df.groupby(["prop_bin", "categoria_produto"])["valor_em_caixa"].sum().reset_index()
-            fig_heat = px.density_heatmap(
-                heat,
-                x="categoria_produto",
-                y="prop_bin",
-                z="valor_em_caixa",
-                color_continuous_scale="Viridis",
-                title="Heatmap ESG: Volume em Caixa por Propensão e Categoria"
-            )
-            st.plotly_chart(fig_heat, use_container_width=True)
-        else:
-            st.warning("Colunas necessárias para o Heatmap não estão completas.")
-      
         st.markdown("### 🌟 Top 15 Clientes: Maior Capital e Maior Propensão ESG")
 
         if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
-            # Ordenar por capital * propensão ESG → os que estão no canto superior direito
+            # Calcular score baseado em capital * propensão
             df_temp = df.copy()
             df_temp["score"] = df_temp["ValorEmCaixa"] * df_temp["propensao_esg"]
             top_oportunidades = df_temp.sort_values(by="score", ascending=False).head(15)
@@ -269,7 +247,6 @@ if st.session_state.usuario:
     
             fig_top.update_traces(
                 marker=dict(color="#FECB00", size=12, line=dict(width=1, color='black')),
-                textposition='none',  # remove nome direto no gráfico
                 hovertemplate="<b>%{hovertext}</b><br>Propensão: %{x:.2f}<br>Capital: R$ %{y:,.2f}<extra></extra>"
             )
     
