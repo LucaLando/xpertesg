@@ -178,7 +178,7 @@ if st.session_state.usuario:
                 title="Distribuição por Faixa ESG",
                 color="faixa_propensao",
                 color_discrete_map={
-                    "Alta": "#2CFD3A",
+                    "Alta": "#00AE0C",
                     "Média": "#484AC2",
                     "Baixa": "#FF6340"
                 }
