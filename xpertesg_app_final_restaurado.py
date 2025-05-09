@@ -240,74 +240,40 @@ if st.session_state.usuario:
         else:
             st.warning("Coluna 'vence_em_dias' não encontrada na base.")
 
-
-
-
-        st.markdown("### 📊 Clientes por Categoria de Produto Atual")
-
-        if "categoria_produto" in df.columns:
-            vencendo_30 = df[df["vence_em_dias"] <= 30]
     
-            # Agrupar corretamente
-            agrupado = vencendo_30.groupby(["categoria_produto", "faixa_propensao"]).size().reset_index(name="Quantidade")
+        st.markdown("### 📦 Distribuição de Clientes por Categoria de Produto e Faixa ESG")
     
-            fig_vencendo = px.bar(
+        if "categoria_produto" in df.columns and "faixa_propensao" in df.columns:
+            agrupado = df.groupby(["categoria_produto", "faixa_propensao"]).size().reset_index(name="Quantidade")
+    
+            fig_categoria = px.bar(
                 agrupado,
-                x="perfil_risco",
+                x="categoria_produto",
                 y="Quantidade",
                 color="faixa_propensao",
-                barmode="group",  # ← garante colunas agrupadas
-                title="Clientes com Ativos ESG Próximos do Vencimento",
+                barmode="group",
+                title="Clientes por Categoria de Produto e Faixa ESG",
                 color_discrete_map={
-                    "Alta": ALTO_ESG,
-                    "Média": MEDIO_ESG,
-                    "Baixa": BAIXO_ESG
+                    "Alta": "green",
+                    "Média": "blue",
+                    "Baixa": "red"
                 },
-                labels={"perfil_risco": "Categoria de Produto", "Quantidade": "Clientes"}
+                labels={"categoria_produto": "Categoria de Produto", "Quantidade": "Clientes"}
             )
     
-            fig_vencendo.update_layout(
+            fig_categoria.update_layout(
                 height=450,
-                bargap=0.2,
+                bargap=0.25,
                 plot_bgcolor="#111111",
                 paper_bgcolor="#111111",
                 font_color="#FFFFFF",
                 legend_title_text="Faixa ESG"
             )
     
-            st.plotly_chart(fig_vencendo, use_container_width=True)
-        else:
-            st.warning("Coluna 'vence_em_dias' não encontrada na base.")
-
-
-
-
-
-    
-        st.markdown("### 📊 Clientes por Categoria de Produto Atual")
-        if "categoria_produto" in df.columns:
-            fig_categoria = px.histogram(
-                df,
-                x="categoria_produto",
-                color="faixa_propensao",
-                title="Distribuição por Categoria de Produto",
-                 color_discrete_map={
-                    "Alta": ALTO_ESG,
-                    "Média": MEDIO_ESG,
-                    "Baixa": BAIXO_ESG
-                }
-            )
             st.plotly_chart(fig_categoria, use_container_width=True)
         else:
-            st.warning("Coluna 'categoria_produto' não encontrada na base.")
-    
-        st.markdown("### 🚫 Oportunidade ESG Inexplorada")
-        if "produtos_esg" in df.columns:
-            inexplorados = df[(df["faixa_propensao"] == "Alta") & (df["produtos_esg"] == 0)]
-            st.metric(label="Clientes com Alta Propensão e Nenhum Produto ESG", value=len(inexplorados))
-        else:
-            st.warning("Coluna 'produtos_esg' não encontrada na base.")
-    
+            st.warning("Colunas necessárias não encontradas: 'categoria_produto' ou 'faixa_propensao'.")
+        
         st.markdown("### 🌟 Top 15 Clientes: Maior Capital e Maior Propensão ESG")
 
         if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
