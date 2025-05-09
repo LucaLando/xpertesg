@@ -174,6 +174,19 @@ if st.session_state.usuario:
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
 
+    # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
+    if "ValorAlocadoESG" not in df.columns:
+        st.warning("⚠️ Coluna 'ValorAlocadoESG' não encontrada — simulando valores.")
+        df["ValorAlocadoESG"] = np.random.uniform(5000, 80000, size=len(df)).round(2)
+
+    # 👇 Garantir que a coluna ValorTotalCarteira exista
+    if "ValorTotalCarteira" not in df.columns:
+        st.warning("⚠️ Coluna 'ValorTotalCarteira' não encontrada — será criada com base em 'ValorAlocadoESG'.")
+        # Supondo que o restante da carteira seja 2x o valor ESG (ajuste conforme necessário)
+        df["ValorTotalCarteira"] = (df["ValorAlocadoESG"] * np.random.uniform(2.5, 5.0, size=len(df))).round(2)
+
+
+        
         st.markdown("### 🚀 Indicador de Alocação ESG")
 
         # Verificação das colunas no DataFrame
