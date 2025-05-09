@@ -206,18 +206,18 @@ if st.session_state.usuario:
             fig_gauge = go.Figure(go.Indicator(
                 mode="gauge+number+delta",
                 value=percentual_esg,
-                delta={'reference': meta_percentual, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
+                delta={'reference': meta_percentual, 'increasing': {'color': ALTO_ESG}, 'decreasing': {'color': "red"}},
                 gauge={
-                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkgray"},
-                    'bar': {'color': "green", 'thickness': 0.3},
-                    'bgcolor': "lightgray",
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': BAIXO_ESG},
+                    'bar': {'color': ALTO_ESG, 'thickness': 0.3},
+                    'bgcolor': BAIXO_ESG,
                     'steps': [
-                        {'range': [0, percentual_esg], 'color': "green"},
-                        {'range': [percentual_esg, 100], 'color': "#D3D3D3"}
+                        {'range': [0, percentual_esg], 'color': ALTO_ESG},
+                        {'range': [percentual_esg, 100], 'color': COR_XP}
                     ],
                     'threshold': {
-                        'line': {'color': "orange", 'width': 4},
-                        'thickness': 0.75,
+                        'line': {'color': COR_XP, 'width': 7},
+                        'thickness': 1,
                         'value': meta_percentual
                     }
                 },
