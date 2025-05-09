@@ -179,7 +179,7 @@ if st.session_state.usuario:
                 color="faixa_propensao",
                 color_discrete_map={
                     "Alta": "#499F68",
-                    "Média": "#499F68",
+                    "Média": "#484AC2",
                     "Baixa": "#FF6340"
                 }
             )
