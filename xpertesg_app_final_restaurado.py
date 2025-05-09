@@ -170,13 +170,22 @@ if st.session_state.usuario:
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
     
-        col1, _ = st.columns(2)
-        with col1:
-            fig1 = px.pizzapie(df, x="faixa_propensao", color="faixa_propensao",
-                                title="Distribuição por Faixa ESG",
-                                color_discrete_sequence=["#FECB00"])
-            fig1.update_traces(marker_line_color="black", marker_line_width=1)
-            st.plotly_chart(fig1, use_container_width=True)
+       col1, _ = st.columns(2)
+    with col1:
+        fig1 = px.pie(
+            df,
+            names="faixa_propensao",
+            title="Distribuição por Faixa ESG",
+            color="faixa_propensao",
+            color_discrete_map={
+                "Alta": "green",
+                "Média": "blue",
+                "Baixa": "red"
+            }
+        )
+        fig1.update_traces(marker_line_color="black", marker_line_width=1, textinfo="label+percent")
+        st.plotly_chart(fig1, use_container_width=True)
+
         
         col3, col4, col5 = st.columns(3)
         with col3:
