@@ -295,7 +295,7 @@ if st.session_state.usuario:
             )
     
             fig_top.update_traces(
-                marker=dict(color="#FECB00", size=12, line=dict(width=1, color='black')),
+                marker=dict(color= ALTO_ESG, size=12, line=dict(width=1, color='black')),
                 hovertemplate="<b>%{hovertext}</b><br>Propensão: %{x:.2f}<br>Capital: R$ %{y:,.2f}<extra></extra>"
             )
     
