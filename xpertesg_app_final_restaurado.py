@@ -246,16 +246,21 @@ if st.session_state.usuario:
             st.plotly_chart(fig_heat, use_container_width=True)
         else:
             st.warning("Colunas necessárias para o Heatmap não estão completas.")
-        st.markdown("### 🌟 Oportunidades ESG por Propensão e Capital Disponível")
+      
+        st.markdown("### 🌟 Top 15 Oportunidades ESG (Capital vs Propensão)")
 
-        if "propensao_esg" in df.columns and "ValorEmCaixa" in df.columns and "nome" in df.columns:
+        if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
+            df_temp = df.copy()
+            df_temp["potencial_esg"] = df_temp["ValorEmCaixa"] / df_temp["propensao_esg"]
+            top_potenciais = df_temp.sort_values(by="potencial_esg", ascending=False).head(15)
+    
             fig_disp = px.scatter(
-                df,
+                top_potenciais,
                 x="propensao_esg",
                 y="ValorEmCaixa",
                 text="nome",
                 labels={"propensao_esg": "Propensão ESG", "ValorEmCaixa": "Capital Disponível (R$)"},
-                title="Clientes com Maior Potencial ESG",
+                title="Top 15 Clientes com Maior Potencial ESG"
             )
     
             fig_disp.update_traces(
@@ -267,7 +272,7 @@ if st.session_state.usuario:
             fig_disp.update_layout(height=500)
             st.plotly_chart(fig_disp, use_container_width=True)
         else:
-            st.warning("Colunas necessárias não estão disponíveis: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
+            st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
 
     elif aba == "📌 Recomendações":
         st.subheader("📌 Recomendações por Faixa ESG")
