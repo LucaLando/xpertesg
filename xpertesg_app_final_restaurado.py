@@ -240,8 +240,51 @@ if st.session_state.usuario:
         else:
             st.warning("Coluna 'vence_em_dias' não encontrada na base.")
 
+
+
+
+st.markdown("### 📊 Clientes por Categoria de Produto Atual")
+
+        if "categoria_produto" in df.columns:
+            vencendo_30 = df[df["vence_em_dias"] <= 30]
     
-        st.markdown("### 📊 Clientes por Categoria de Produto Atual (simulada)")
+            # Agrupar corretamente
+            agrupado = vencendo_30.groupby(["categoria_produto", "faixa_propensao"]).size().reset_index(name="Quantidade")
+    
+            fig_vencendo = px.bar(
+                agrupado,
+                x="perfil_risco",
+                y="Quantidade",
+                color="faixa_propensao",
+                barmode="group",  # ← garante colunas agrupadas
+                title="Clientes com Ativos ESG Próximos do Vencimento",
+                color_discrete_map={
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
+                },
+                labels={"perfil_risco": "Categoria de Produto", "Quantidade": "Clientes"}
+            )
+    
+            fig_vencendo.update_layout(
+                height=450,
+                bargap=0.2,
+                plot_bgcolor="#111111",
+                paper_bgcolor="#111111",
+                font_color="#FFFFFF",
+                legend_title_text="Faixa ESG"
+            )
+    
+            st.plotly_chart(fig_vencendo, use_container_width=True)
+        else:
+            st.warning("Coluna 'vence_em_dias' não encontrada na base.")
+
+
+
+
+
+    
+        st.markdown("### 📊 Clientes por Categoria de Produto Atual")
         if "categoria_produto" in df.columns:
             fig_categoria = px.histogram(
                 df,
