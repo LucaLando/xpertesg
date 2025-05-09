@@ -245,10 +245,14 @@ if st.session_state.usuario:
         if "categoria_produto" in df.columns:
             fig_categoria = px.histogram(
                 df,
-                x="categoria_produto",
-                color="faixa_propensao",
+                x="Categoria de Produto",
+                color="Propensão ESG",
                 title="Distribuição por Categoria de Produto",
-                color_discrete_sequence=px.colors.qualitative.Prism
+                 color_discrete_map={
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
+                }
             )
             st.plotly_chart(fig_categoria, use_container_width=True)
         else:
