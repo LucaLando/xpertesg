@@ -5,6 +5,7 @@ import plotly.express as px
 import openai
 import os
 import json
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
@@ -172,14 +173,6 @@ if st.session_state.usuario:
 
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
-
-
-
-
-
-
-import plotly.graph_objects as go
-
             st.markdown("### 🚀 Indicador de Alocação ESG")
             
             # Verificação das colunas no DataFrame
