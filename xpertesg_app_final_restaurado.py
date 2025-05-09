@@ -247,30 +247,34 @@ if st.session_state.usuario:
         else:
             st.warning("Colunas necessárias para o Heatmap não estão completas.")
       
-        st.markdown("### 🌟 Top 15 Oportunidades ESG (Capital vs Propensão)")
+        st.markdown("### 🌟 Top 15 Clientes: Maior Capital e Maior Propensão ESG")
 
         if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
+            # Ordenar por capital * propensão ESG → os que estão no canto superior direito
             df_temp = df.copy()
-            df_temp["potencial_esg"] = df_temp["ValorEmCaixa"] / df_temp["propensao_esg"]
-            top_potenciais = df_temp.sort_values(by="potencial_esg", ascending=False).head(15)
+            df_temp["score"] = df_temp["ValorEmCaixa"] * df_temp["propensao_esg"]
+            top_oportunidades = df_temp.sort_values(by="score", ascending=False).head(15)
     
-            fig_disp = px.scatter(
-                top_potenciais,
+            fig_top = px.scatter(
+                top_oportunidades,
                 x="propensao_esg",
                 y="ValorEmCaixa",
-                text="nome",
-                labels={"propensao_esg": "Propensão ESG", "ValorEmCaixa": "Capital Disponível (R$)"},
-                title="Top 15 Clientes com Maior Potencial ESG"
+                hover_name="nome",
+                labels={
+                    "propensao_esg": "Propensão ESG",
+                    "ValorEmCaixa": "Capital Disponível (R$)"
+                },
+                title="Top 15 Clientes com Maior Capital e Propensão ESG"
             )
     
-            fig_disp.update_traces(
-                marker=dict(color="#FECB00", size=10, line=dict(width=1, color='black')),
-                textposition='top center',
-                hovertemplate="<b>%{text}</b><br>Propensão: %{x:.2f}<br>Capital: R$ %{y:,.2f}<extra></extra>"
+            fig_top.update_traces(
+                marker=dict(color="#FECB00", size=12, line=dict(width=1, color='black')),
+                textposition='none',  # remove nome direto no gráfico
+                hovertemplate="<b>%{hovertext}</b><br>Propensão: %{x:.2f}<br>Capital: R$ %{y:,.2f}<extra></extra>"
             )
     
-            fig_disp.update_layout(height=500)
-            st.plotly_chart(fig_disp, use_container_width=True)
+            fig_top.update_layout(height=500)
+            st.plotly_chart(fig_top, use_container_width=True)
         else:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
 
