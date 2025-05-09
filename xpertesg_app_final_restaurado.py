@@ -177,9 +177,6 @@ if st.session_state.usuario:
                                 color_discrete_sequence=["#FECB00"])
             fig1.update_traces(marker_line_color="black", marker_line_width=1)
             st.plotly_chart(fig1, use_container_width=True)
-        with col2:
-            st.markdown("### 🔝 Top 5 - Alta Propensão")
-            st.dataframe(top_alta[["nome", "propensao_esg", "perfil_risco"]])
         
         col3, col4, col5 = st.columns(3)
         with col3:
