@@ -243,7 +243,7 @@ if st.session_state.usuario:
 
 
 
-st.markdown("### 📊 Clientes por Categoria de Produto Atual")
+        st.markdown("### 📊 Clientes por Categoria de Produto Atual")
 
         if "categoria_produto" in df.columns:
             vencendo_30 = df[df["vence_em_dias"] <= 30]
