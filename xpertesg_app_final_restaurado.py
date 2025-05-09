@@ -183,7 +183,7 @@ if st.session_state.usuario:
                     "Baixa": "#FF6340"
                 }
             )
-            fig1.update_traces(marker_line_width=3, textinfo="label+percent")
+            fig1.update_traces(textinfo="label+percent")
             st.plotly_chart(fig1, use_container_width=True)
 
         
