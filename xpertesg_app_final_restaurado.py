@@ -170,7 +170,7 @@ if st.session_state.usuario:
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
     
-        col1, col2 = st.columns(2)
+        col1 = st.columns(1)
         with col1:
             fig1 = px.histogram(df, x="faixa_propensao", color="faixa_propensao",
                                 title="Distribuição por Faixa ESG",
@@ -181,14 +181,16 @@ if st.session_state.usuario:
             st.markdown("### 🔝 Top 5 - Alta Propensão")
             st.dataframe(top_alta[["nome", "propensao_esg", "perfil_risco"]])
         
-        col3, col4 = st.columns(2)
+        col3, col4, col5 = st.columns(3)
         with col3:
             st.markdown("### 🔝 Top 5 - Baixa Propensão")
             st.dataframe(top_baixa[["nome", "propensao_esg", "perfil_risco"]])
         with col4:
             st.markdown("### 🔝 Top 5 - Média Propensão")
             st.dataframe(top_media[["nome", "propensao_esg", "perfil_risco"]])
-        
+        with col5:
+            st.markdown("### 🔝 Top 5 - Alta Propensão")
+            st.dataframe(top_alta[["nome", "propensao_esg", "perfil_risco"]])
        
     
         # NOVOS GRÁFICOS E INSIGHTS ESG
