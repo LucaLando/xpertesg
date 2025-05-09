@@ -172,7 +172,7 @@ if st.session_state.usuario:
     
         col1, _ = st.columns(2)
         with col1:
-            fig1 = px.pie(df, x="faixa_propensao", color="faixa_propensao",
+            fig1 = px.pizzapie(df, x="faixa_propensao", color="faixa_propensao",
                                 title="Distribuição por Faixa ESG",
                                 color_discrete_sequence=["#FECB00"])
             fig1.update_traces(marker_line_color="black", marker_line_width=1)
