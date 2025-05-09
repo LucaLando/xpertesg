@@ -213,10 +213,10 @@ if st.session_state.usuario:
                     'bgcolor': BAIXO_ESG,
                     'steps': [
                         {'range': [0, percentual_esg], 'color': ALTO_ESG},
-                        {'range': [percentual_esg, 100], 'color': COR_XP}
+                        {'range': [percentual_esg, 100], 'color': BAIXO_ESG}
                     ],
                     'threshold': {
-                        'line': {'color': COR_XP, 'width': 7},
+                        'line': {'color': COR_XP, 'width': 10},
                         'thickness': 1,
                         'value': meta_percentual
                     }
