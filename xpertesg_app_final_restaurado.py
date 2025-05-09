@@ -173,57 +173,58 @@ if st.session_state.usuario:
 
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
-            st.markdown("### 🚀 Indicador de Alocação ESG")
-            
-            # Verificação das colunas no DataFrame
-            if "ValorAlocadoESG" in df.columns and "ValorTotalCarteira" in df.columns:
-            
-                capital_total = df["ValorTotalCarteira"].sum()
-                capital_esg = df["ValorAlocadoESG"].sum()
-            
-                # Cálculo da proporção ESG (%)
-                if capital_total > 0:
-                    percentual_esg = round((capital_esg / capital_total) * 100, 2)
-                else:
-                    percentual_esg = 0.0
-            
-                # Meta futura (%)
-                meta_percentual = 10  # você pode ajustar isso dinamicamente se quiser
-            
-                # Construção do gráfico tipo "velocímetro"
-                fig_gauge = go.Figure(go.Indicator(
-                    mode="gauge+number+delta",
-                    value=percentual_esg,
-                    delta={'reference': meta_percentual, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
-                    gauge={
-                        'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkgray"},
-                        'bar': {'color': "green", 'thickness': 0.3},
-                        'bgcolor': "lightgray",
-                        'steps': [
-                            {'range': [0, percentual_esg], 'color': "green"},
-                            {'range': [percentual_esg, 100], 'color': "#D3D3D3"}
-                        ],
-                        'threshold': {
-                            'line': {'color': "orange", 'width': 4},
-                            'thickness': 0.75,
-                            'value': meta_percentual
-                        }
-                    },
-                    title={'text': "Proporção de Capital Alocado em ESG (%)"}
-                ))
-            
-                fig_gauge.update_layout(
-                    height=400,
-                    font=dict(size=16),
-                    paper_bgcolor="#111111",
-                    plot_bgcolor="#111111",
-                    font_color="white"
-                )
-            
-                st.plotly_chart(fig_gauge, use_container_width=True)
-            
+
+        st.markdown("### 🚀 Indicador de Alocação ESG")
+
+        # Verificação das colunas no DataFrame
+        if "ValorAlocadoESG" in df.columns and "ValorTotalCarteira" in df.columns:
+
+            capital_total = df["ValorTotalCarteira"].sum()
+            capital_esg = df["ValorAlocadoESG"].sum()
+
+            # Cálculo da proporção ESG (%)
+            if capital_total > 0:
+                percentual_esg = round((capital_esg / capital_total) * 100, 2)
             else:
-                st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
+                percentual_esg = 0.0
+
+            # Meta futura (%)
+            meta_percentual = 10  # você pode ajustar isso dinamicamente se quiser
+
+            # Construção do gráfico tipo "velocímetro"
+            fig_gauge = go.Figure(go.Indicator(
+                mode="gauge+number+delta",
+                value=percentual_esg,
+                delta={'reference': meta_percentual, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
+                gauge={
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkgray"},
+                    'bar': {'color': "green", 'thickness': 0.3},
+                    'bgcolor': "lightgray",
+                    'steps': [
+                        {'range': [0, percentual_esg], 'color': "green"},
+                        {'range': [percentual_esg, 100], 'color': "#D3D3D3"}
+                    ],
+                    'threshold': {
+                        'line': {'color': "orange", 'width': 4},
+                        'thickness': 0.75,
+                        'value': meta_percentual
+                    }
+                },
+                title={'text': "Proporção de Capital Alocado em ESG (%)"}
+            ))
+
+            fig_gauge.update_layout(
+                height=400,
+                font=dict(size=16),
+                paper_bgcolor="#111111",
+                plot_bgcolor="#111111",
+                font_color="white"
+            )
+
+            st.plotly_chart(fig_gauge, use_container_width=True)
+
+        else:
+            st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
 
 
 
