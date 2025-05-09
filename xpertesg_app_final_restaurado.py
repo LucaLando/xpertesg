@@ -8,9 +8,9 @@ import json
 
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
-ALTO_ESG = "#7CDF64"
-MEDIO_ESG = "#6689A1"
-BAIXO_ESG = "#EB8258"
+ALTO_ESG = "#04C427"
+MEDIO_ESG = "#2BACB4"
+BAIXO_ESG = "#ADA9BD"
 
 # Dados simulados
 df = pd.read_csv("base_clientes_xpertesg_1000.csv")
