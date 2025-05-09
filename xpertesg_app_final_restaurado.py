@@ -202,18 +202,28 @@ if st.session_state.usuario:
         # NOVOS GRÁFICOS E INSIGHTS ESG
     
         st.markdown("### ⏳ Clientes com ativos vencendo em até 30 dias")
+
         if "vence_em_dias" in df.columns:
             vencendo_30 = df[df["vence_em_dias"] <= 30]
-            fig_vencendo = px.histogram(
-                vencendo_30,
+    
+            # Contagem agrupada por faixa e perfil
+            agrupado = vencendo_30.groupby(["faixa_propensao", "perfil_risco"]).size().reset_index(name="Quantidade")
+    
+            fig_vencendo = px.bar(
+                agrupado,
                 x="faixa_propensao",
+                y="Quantidade",
                 color="perfil_risco",
+                barmode="group",
                 title="Faixa ESG dos Clientes com Ativos Próximos do Vencimento",
                 color_discrete_sequence=px.colors.qualitative.Vivid
             )
+    
             st.plotly_chart(fig_vencendo, use_container_width=True)
+    
         else:
             st.warning("Coluna 'vence_em_dias' não encontrada na base.")
+
     
         st.markdown("### 📊 Clientes por Categoria de Produto Atual (simulada)")
         if "categoria_produto" in df.columns:
