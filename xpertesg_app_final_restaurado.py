@@ -206,36 +206,34 @@ if st.session_state.usuario:
         if "vence_em_dias" in df.columns:
             vencendo_30 = df[df["vence_em_dias"] <= 30]
     
-            # Agrupar por faixa e perfil
-            agrupado = vencendo_30.groupby(["faixa_propensao", "perfil_risco"]).size().reset_index(name="Quantidade")
+            # Agrupar corretamente
+            agrupado = vencendo_30.groupby(["perfil_risco", "faixa_propensao"]).size().reset_index(name="Quantidade")
     
             fig_vencendo = px.bar(
                 agrupado,
-                x="faixa_propensao",
+                x="perfil_risco",
                 y="Quantidade",
-                color="perfil_risco",
-                barmode="group",
+                color="faixa_propensao",
+                barmode="group",  # ← garante colunas agrupadas
                 title="Clientes com Ativos ESG Próximos do Vencimento",
                 color_discrete_map={
-                    "Conservador": "#00C2C2",  # verde-água
-                    "Moderado": "#FF6B6B",     # vermelho suave
-                    "Agressivo": "#FFD700"     # amarelo XP
+                    "Alta": "green",
+                    "Média": "blue",
+                    "Baixa": "red"
                 },
-                labels={"faixa_propensao": "Faixa ESG", "Quantidade": "Quantidade de Clientes"}
+                labels={"perfil_risco": "Perfil de Risco", "Quantidade": "Clientes"}
             )
     
             fig_vencendo.update_layout(
                 height=450,
                 bargap=0.2,
-                plot_bgcolor="#FFFFFF",
-                paper_bgcolor="#FFFFFF",
-                legend_title_text="Perfil de Risco",
-                title_font_size=18,
-                font=dict(size=13)
+                plot_bgcolor="#111111",
+                paper_bgcolor="#111111",
+                font_color="#FFFFFF",
+                legend_title_text="Faixa ESG"
             )
     
             st.plotly_chart(fig_vencendo, use_container_width=True)
-    
         else:
             st.warning("Coluna 'vence_em_dias' não encontrada na base.")
 
