@@ -8,6 +8,9 @@ import json
 
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
+ALTO_ESG = "#7CDF64"
+MEDIO_ESG = "#6689A1"
+BAIXO_ESG = "#EB8258"
 
 # Dados simulados
 df = pd.read_csv("base_clientes_xpertesg_1000.csv")
@@ -178,9 +181,9 @@ if st.session_state.usuario:
                 title="Distribuição por Faixa ESG",
                 color="faixa_propensao",
                 color_discrete_map={
-                    "Alta": "#7CDF64",
-                    "Média": "#6689A1",
-                    "Baixa": "#EB8258"
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
                 }
             )
             fig1.update_traces(textinfo="label+percent")
@@ -217,9 +220,9 @@ if st.session_state.usuario:
                 barmode="group",  # ← garante colunas agrupadas
                 title="Clientes com Ativos ESG Próximos do Vencimento",
                 color_discrete_map={
-                    "Alta": "green",
-                    "Média": "blue",
-                    "Baixa": "red"
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
                 },
                 labels={"perfil_risco": "Perfil de Risco", "Quantidade": "Clientes"}
             )
