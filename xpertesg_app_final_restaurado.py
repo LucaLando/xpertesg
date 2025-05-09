@@ -254,9 +254,9 @@ if st.session_state.usuario:
                 barmode="group",
                 title="Clientes por Categoria de Produto e Faixa ESG",
                 color_discrete_map={
-                    "Alta": "green",
-                    "Média": "blue",
-                    "Baixa": "red"
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
                 },
                 labels={"categoria_produto": "Categoria de Produto", "Quantidade": "Clientes"}
             )
