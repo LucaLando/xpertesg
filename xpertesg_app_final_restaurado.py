@@ -170,7 +170,7 @@ if st.session_state.usuario:
     elif aba == "📈 Dashboards":
         st.subheader("📊 Análise ESG da Base de Clientes")
     
-        col1 = st.columns(1)
+        col1 = st.columns()
         with col1:
             fig1 = px.histogram(df, x="faixa_propensao", color="faixa_propensao",
                                 title="Distribuição por Faixa ESG",
