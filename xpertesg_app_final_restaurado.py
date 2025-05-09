@@ -178,9 +178,9 @@ if st.session_state.usuario:
                 title="Distribuição por Faixa ESG",
                 color="faixa_propensao",
                 color_discrete_map={
-                    "Alta": "green",
-                    "Média": "blue",
-                    "Baixa": "red"
+                    "Alta": "#499F68",
+                    "Média": "#499F68",
+                    "Baixa": "#FF6340"
                 }
             )
             fig1.update_traces(marker_line_color="black", marker_line_width=1, textinfo="label+percent")
