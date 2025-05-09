@@ -240,6 +240,28 @@ if st.session_state.usuario:
             st.plotly_chart(fig_heat, use_container_width=True)
         else:
             st.warning("Colunas necessárias para o Heatmap não estão completas.")
+            st.markdown("### 🌟 Oportunidades ESG por Propensão e Capital Disponível")
+
+    if "propensao_esg" in df.columns and "ValorEmCaixa" in df.columns and "nome" in df.columns:
+        fig_disp = px.scatter(
+            df,
+            x="propensao_esg",
+            y="ValorEmCaixa",
+            text="nome",
+            labels={"propensao_esg": "Propensão ESG", "ValorEmCaixa": "Capital Disponível (R$)"},
+            title="Clientes com Maior Potencial ESG",
+        )
+
+        fig_disp.update_traces(
+            marker=dict(color="#FECB00", size=10, line=dict(width=1, color='black')),
+            textposition='top center',
+            hovertemplate="<b>%{text}</b><br>Propensão: %{x:.2f}<br>Capital: R$ %{y:,.2f}<extra></extra>"
+        )
+
+        fig_disp.update_layout(height=500)
+        st.plotly_chart(fig_disp, use_container_width=True)
+    else:
+        st.warning("Colunas necessárias não estão disponíveis: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
 
     elif aba == "📌 Recomendações":
         st.subheader("📌 Recomendações por Faixa ESG")
