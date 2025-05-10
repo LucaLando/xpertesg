@@ -372,150 +372,150 @@ if st.session_state.usuario:
             else:
                 st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
-        elif aba == "📌 Recomendações":
-            st.subheader("📌 Recomendações por Faixa ESG")
-            for _, cliente in df.iterrows():
-                if cliente["faixa_propensao"] == "Baixa":
-                    acao = "Educar sobre ESG com conteúdo introdutório."
-                elif cliente["faixa_propensao"] == "Média":
-                    acao = "Apresentar produtos ESG e estimular interesse."
-                else:
-                    acao = "Alocar diretamente em produtos ESG recomendados."
-                st.info(f"👤 {cliente['nome']} ({cliente['perfil_risco']}) → {acao}")
-
-    elif aba == "💡 Alocação Inteligente":
-        st.subheader("💡 Alocação Inteligente com ESG")
-    
-        # Seleção de cliente da base
-        cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
-        cliente_info = df[df["nome"] == cliente_selecionado].iloc[0]
-        perfil = cliente_info["perfil_risco"]
-        st.markdown(f"**Perfil de Investidor XP:** {perfil}")
-    
-        # Definições de alocação padrão por perfil
-        if perfil == "Conservador":
-            carteira_base = {
-                "Renda Fixa": 50000,
-                "Multimercado": 30000,
-                "Caixa": 20000
-            }
-        elif perfil == "Moderado":
-            carteira_base = {
-                "Multimercado": 40000,
-                "Renda Fixa": 30000,
-                "ETF": 30000
-            }
-        else:  # Agressivo
-            carteira_base = {
-                "Renda Variável": 40000,
-                "ETF": 35000,
-                "Multimercado": 25000
-            }
-    
-        # Produtos ESG disponíveis
-        produtos_esg = [
-            {"nome": "Fundo XP Essencial ESG", "categoria": "Renda Fixa", "risco": 3},
-            {"nome": "Pandhora ESG Prev", "categoria": "Multimercado", "risco": 7},
-            {"nome": "ETF XP Sustentável", "categoria": "ETF", "risco": 10},
-            {"nome": "Fundo XP Verde Ações", "categoria": "Renda Variável", "risco": 15}
-        ]
-    
-        # Simular substituições parciais
-        carteira_recomendada = []
-        substituicoes = []
-    
-        for categoria, valor in carteira_base.items():
-            if categoria in ["Caixa"]:
-                carteira_recomendada.append({"Produto": categoria, "Valor": valor})
-                continue
-    
-            esg_produto = next((p for p in produtos_esg if p["categoria"] == categoria), None)
-            if esg_produto:
-                valor_esg = valor * 0.5
-                valor_tradicional = valor * 0.5
-                carteira_recomendada.append({"Produto": f"{categoria} Tradicional", "Valor": valor_tradicional})
-                carteira_recomendada.append({"Produto": f"{esg_produto['nome']}", "Valor": valor_esg})
-                substituicoes.append({
-                    "Categoria": categoria,
-                    "ESG Sugerido": esg_produto["nome"],
-                    "Porcentagem ESG": "50%",
-                    "Motivo": "Risco compatível e disponível ESG na mesma classe"
-                })
+    elif aba == "📌 Recomendações":
+        st.subheader("📌 Recomendações por Faixa ESG")
+        for _, cliente in df.iterrows():
+            if cliente["faixa_propensao"] == "Baixa":
+                acao = "Educar sobre ESG com conteúdo introdutório."
+            elif cliente["faixa_propensao"] == "Média":
+                acao = "Apresentar produtos ESG e estimular interesse."
             else:
-                carteira_recomendada.append({"Produto": categoria, "Valor": valor})
-    
-        # Gráficos
-        col1, col2 = st.columns(2)
-    
-        with col1:
-            df_atual = pd.DataFrame({"Produto": list(carteira_base.keys()), "Valor": list(carteira_base.values())})
-            fig1 = px.pie(df_atual, names='Produto', values='Valor', title="Carteira Atual por Categoria")
-            st.plotly_chart(fig1, use_container_width=True)
-    
-        with col2:
-            df_nova = pd.DataFrame(carteira_recomendada)
-            fig2 = px.pie(df_nova, names='Produto', values='Valor', title="Carteira Recomendada com ESG")
-            st.plotly_chart(fig2, use_container_width=True)
-    
-        # Tabela de substituições
-        if substituicoes:
-            st.markdown("### 📌 Substituições Recomendadas")
-            st.dataframe(pd.DataFrame(substituicoes))
-        else:
-            st.info("Nenhuma substituição ESG recomendada no momento.")
-            
-    elif aba == "📢 Campanha":
-        st.subheader("📢 Campanha de Alocação ESG")
-    
-        # Simular histórico de alocação do assessor e da média XP
-        datas = pd.date_range(end=pd.Timestamp.today(), periods=12, freq='M')
-        aloc_assessor = np.cumsum(np.random.randint(10000, 50000, size=12))
-        aloc_xp = np.cumsum(np.random.randint(15000, 40000, size=12))
-    
-        df_campanha = pd.DataFrame({
-            "Data": datas,
-            "Assessor": aloc_assessor,
-            "Média XP": aloc_xp
-        })
-    
-        # Gráfico de linha: evolução individual
-        st.markdown("### 📈 Alocação Acumulada ao Longo do Tempo")
-        fig_crescimento = px.line(
-            df_campanha,
-            x="Data",
-            y="Assessor",
-            title="Alocação ESG - Assessor",
-            markers=True,
-            labels={"Assessor": "Valor Acumulado (R$)"},
-            line_shape="linear"
-        )
-        fig_crescimento.update_traces(line=dict(color="#FFFF00", width=3))
+                acao = "Alocar diretamente em produtos ESG recomendados."
+            st.info(f"👤 {cliente['nome']} ({cliente['perfil_risco']}) → {acao}")
 
-        st.plotly_chart(fig_crescimento, use_container_width=True)
-    
-        # Gráfico comparativo: assessor vs XP
-        st.markdown("### ⚖️ Comparativo com Média da XP")
-        total_assessor = aloc_assessor[-1]
-        total_xp = aloc_xp[-1]
-    
-        fig_barra = px.bar(
-            x=["Assessor", "Média XP"],
-            y=[total_assessor, total_xp],
-            labels={"x": "Origem", "y": "Valor Total Alocado"},
-            color=["Assessor", "Média XP"],
-            title="Total Alocado no Ano"
-        )
-        st.plotly_chart(fig_barra, use_container_width=True)
-    
-        # Estatísticas gerais
-        st.markdown("### 🧾 Estatísticas da Campanha")
-        st.metric("Total Alocado pelo Assessor", f"R$ {total_assessor:,.0f}")
-        st.metric("Média de Alocação XP", f"R$ {total_xp:,.0f}")
-    
-        # Sugestões de gamificação futura
-        st.markdown("### 🕹️ Ideias para Futuras Gamificações")
-        st.markdown("- 🏆 **Ranking de Assessores por Alocação ESG**")
-        st.markdown("- 🎯 **Metas Mensais com Recompensas**")
-        st.markdown("- 🥇 **Badges como 'Top ESG' ou '100% Verde'**")
-        st.markdown("- 📅 **Missões Semanais para Diversificação**")
-        st.markdown("- 💰 **Simulação de Pontos ou Cashback Interno**")
+elif aba == "💡 Alocação Inteligente":
+    st.subheader("💡 Alocação Inteligente com ESG")
+
+    # Seleção de cliente da base
+    cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
+    cliente_info = df[df["nome"] == cliente_selecionado].iloc[0]
+    perfil = cliente_info["perfil_risco"]
+    st.markdown(f"**Perfil de Investidor XP:** {perfil}")
+
+    # Definições de alocação padrão por perfil
+    if perfil == "Conservador":
+        carteira_base = {
+            "Renda Fixa": 50000,
+            "Multimercado": 30000,
+            "Caixa": 20000
+        }
+    elif perfil == "Moderado":
+        carteira_base = {
+            "Multimercado": 40000,
+            "Renda Fixa": 30000,
+            "ETF": 30000
+        }
+    else:  # Agressivo
+        carteira_base = {
+            "Renda Variável": 40000,
+            "ETF": 35000,
+            "Multimercado": 25000
+        }
+
+    # Produtos ESG disponíveis
+    produtos_esg = [
+        {"nome": "Fundo XP Essencial ESG", "categoria": "Renda Fixa", "risco": 3},
+        {"nome": "Pandhora ESG Prev", "categoria": "Multimercado", "risco": 7},
+        {"nome": "ETF XP Sustentável", "categoria": "ETF", "risco": 10},
+        {"nome": "Fundo XP Verde Ações", "categoria": "Renda Variável", "risco": 15}
+    ]
+
+    # Simular substituições parciais
+    carteira_recomendada = []
+    substituicoes = []
+
+    for categoria, valor in carteira_base.items():
+        if categoria in ["Caixa"]:
+            carteira_recomendada.append({"Produto": categoria, "Valor": valor})
+            continue
+
+        esg_produto = next((p for p in produtos_esg if p["categoria"] == categoria), None)
+        if esg_produto:
+            valor_esg = valor * 0.5
+            valor_tradicional = valor * 0.5
+            carteira_recomendada.append({"Produto": f"{categoria} Tradicional", "Valor": valor_tradicional})
+            carteira_recomendada.append({"Produto": f"{esg_produto['nome']}", "Valor": valor_esg})
+            substituicoes.append({
+                "Categoria": categoria,
+                "ESG Sugerido": esg_produto["nome"],
+                "Porcentagem ESG": "50%",
+                "Motivo": "Risco compatível e disponível ESG na mesma classe"
+            })
+        else:
+            carteira_recomendada.append({"Produto": categoria, "Valor": valor})
+
+    # Gráficos
+    col1, col2 = st.columns(2)
+
+    with col1:
+        df_atual = pd.DataFrame({"Produto": list(carteira_base.keys()), "Valor": list(carteira_base.values())})
+        fig1 = px.pie(df_atual, names='Produto', values='Valor', title="Carteira Atual por Categoria")
+        st.plotly_chart(fig1, use_container_width=True)
+
+    with col2:
+        df_nova = pd.DataFrame(carteira_recomendada)
+        fig2 = px.pie(df_nova, names='Produto', values='Valor', title="Carteira Recomendada com ESG")
+        st.plotly_chart(fig2, use_container_width=True)
+
+    # Tabela de substituições
+    if substituicoes:
+        st.markdown("### 📌 Substituições Recomendadas")
+        st.dataframe(pd.DataFrame(substituicoes))
+    else:
+        st.info("Nenhuma substituição ESG recomendada no momento.")
+        
+elif aba == "📢 Campanha":
+    st.subheader("📢 Campanha de Alocação ESG")
+
+    # Simular histórico de alocação do assessor e da média XP
+    datas = pd.date_range(end=pd.Timestamp.today(), periods=12, freq='M')
+    aloc_assessor = np.cumsum(np.random.randint(10000, 50000, size=12))
+    aloc_xp = np.cumsum(np.random.randint(15000, 40000, size=12))
+
+    df_campanha = pd.DataFrame({
+        "Data": datas,
+        "Assessor": aloc_assessor,
+        "Média XP": aloc_xp
+    })
+
+    # Gráfico de linha: evolução individual
+    st.markdown("### 📈 Alocação Acumulada ao Longo do Tempo")
+    fig_crescimento = px.line(
+        df_campanha,
+        x="Data",
+        y="Assessor",
+        title="Alocação ESG - Assessor",
+        markers=True,
+        labels={"Assessor": "Valor Acumulado (R$)"},
+        line_shape="linear"
+    )
+    fig_crescimento.update_traces(line=dict(color="#FFFF00", width=3))
+
+    st.plotly_chart(fig_crescimento, use_container_width=True)
+
+    # Gráfico comparativo: assessor vs XP
+    st.markdown("### ⚖️ Comparativo com Média da XP")
+    total_assessor = aloc_assessor[-1]
+    total_xp = aloc_xp[-1]
+
+    fig_barra = px.bar(
+        x=["Assessor", "Média XP"],
+        y=[total_assessor, total_xp],
+        labels={"x": "Origem", "y": "Valor Total Alocado"},
+        color=["Assessor", "Média XP"],
+        title="Total Alocado no Ano"
+    )
+    st.plotly_chart(fig_barra, use_container_width=True)
+
+    # Estatísticas gerais
+    st.markdown("### 🧾 Estatísticas da Campanha")
+    st.metric("Total Alocado pelo Assessor", f"R$ {total_assessor:,.0f}")
+    st.metric("Média de Alocação XP", f"R$ {total_xp:,.0f}")
+
+    # Sugestões de gamificação futura
+    st.markdown("### 🕹️ Ideias para Futuras Gamificações")
+    st.markdown("- 🏆 **Ranking de Assessores por Alocação ESG**")
+    st.markdown("- 🎯 **Metas Mensais com Recompensas**")
+    st.markdown("- 🥇 **Badges como 'Top ESG' ou '100% Verde'**")
+    st.markdown("- 📅 **Missões Semanais para Diversificação**")
+    st.markdown("- 💰 **Simulação de Pontos ou Cashback Interno**")
