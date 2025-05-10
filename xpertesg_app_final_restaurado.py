@@ -234,8 +234,8 @@ if st.session_state.usuario:
 
             st.plotly_chart(fig_gauge, use_container_width=True)
 
-            else:
-                st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
+        else:
+            st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
     
     
     
