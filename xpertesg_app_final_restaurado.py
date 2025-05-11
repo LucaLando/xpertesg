@@ -242,135 +242,135 @@ if st.session_state.usuario:
     
     
             
-            _, col1, _ = st.columns(3)
-            with col1:
-                fig1 = px.pie(
-                    df,
-                    names="faixa_propensao",
-                    title="Distribuição por Faixa ESG",
-                    color="faixa_propensao",
-                    color_discrete_map={
-                        "Alta": ALTO_ESG,
-                        "Média": MEDIO_ESG,
-                        "Baixa": BAIXO_ESG
-                    }
-                )
-                fig1.update_traces(textinfo="label+percent")
-                st.plotly_chart(fig1, use_container_width=True)
+        _, col1, _ = st.columns(3)
+        with col1:
+            fig1 = px.pie(
+                df,
+                names="faixa_propensao",
+                title="Distribuição por Faixa ESG",
+                color="faixa_propensao",
+                color_discrete_map={
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
+                }
+            )
+            fig1.update_traces(textinfo="label+percent")
+            st.plotly_chart(fig1, use_container_width=True)
+
+        col3, col4, col5 = st.columns(3)
+        with col3:
+            st.markdown("### 🔝 Top 5 - Baixa Propensão")
+            st.dataframe(top_baixa[["nome", "propensao_esg", "perfil_risco"]])
+        with col4:
+            st.markdown("### 🔝 Top 5 - Média Propensão")
+            st.dataframe(top_media[["nome", "propensao_esg", "perfil_risco"]])
+        with col5:
+            st.markdown("### 🔝 Top 5 - Alta Propensão")
+            st.dataframe(top_alta[["nome", "propensao_esg", "perfil_risco"]])
+       
     
-            col3, col4, col5 = st.columns(3)
-            with col3:
-                st.markdown("### 🔝 Top 5 - Baixa Propensão")
-                st.dataframe(top_baixa[["nome", "propensao_esg", "perfil_risco"]])
-            with col4:
-                st.markdown("### 🔝 Top 5 - Média Propensão")
-                st.dataframe(top_media[["nome", "propensao_esg", "perfil_risco"]])
-            with col5:
-                st.markdown("### 🔝 Top 5 - Alta Propensão")
-                st.dataframe(top_alta[["nome", "propensao_esg", "perfil_risco"]])
-           
-        
-            # NOVOS GRÁFICOS E INSIGHTS ESG
-        
-            st.markdown("### ⏳ Clientes com ativos vencendo em até 30 dias")
+        # NOVOS GRÁFICOS E INSIGHTS ESG
     
-            if "vence_em_dias" in df.columns:
-                vencendo_30 = df[df["vence_em_dias"] <= 30]
-        
-                # Agrupar corretamente
-                agrupado = vencendo_30.groupby(["perfil_risco", "faixa_propensao"]).size().reset_index(name="Quantidade")
-        
-                fig_vencendo = px.bar(
-                    agrupado,
-                    x="perfil_risco",
-                    y="Quantidade",
-                    color="faixa_propensao",
-                    barmode="group",  # ← garante colunas agrupadas
-                    title="Clientes com Ativos ESG Próximos do Vencimento",
-                    color_discrete_map={
-                        "Alta": ALTO_ESG,
-                        "Média": MEDIO_ESG,
-                        "Baixa": BAIXO_ESG
-                    },
-                    labels={"perfil_risco": "Perfil de Risco", "Quantidade": "Clientes"}
-                )
-        
-                fig_vencendo.update_layout(
-                    height=450,
-                    bargap=0.2,
-                    plot_bgcolor="#111111",
-                    paper_bgcolor="#111111",
-                    font_color="#FFFFFF",
-                    legend_title_text="Faixa ESG"
-                )
-        
-                st.plotly_chart(fig_vencendo, use_container_width=True)
-            else:
-                st.warning("Coluna 'vence_em_dias' não encontrada na base.")
+        st.markdown("### ⏳ Clientes com ativos vencendo em até 30 dias")
+
+        if "vence_em_dias" in df.columns:
+            vencendo_30 = df[df["vence_em_dias"] <= 30]
     
-        
-            st.markdown("### 📦 Distribuição de Clientes por Categoria de Produto e Faixa ESG")
-        
-            if "categoria_produto" in df.columns and "faixa_propensao" in df.columns:
-                agrupado = df.groupby(["categoria_produto", "faixa_propensao"]).size().reset_index(name="Quantidade")
-        
-                fig_categoria = px.bar(
-                    agrupado,
-                    x="categoria_produto",
-                    y="Quantidade",
-                    color="faixa_propensao",
-                    barmode="group",
-                    title="Clientes por Categoria de Produto e Faixa ESG",
-                    color_discrete_map={
-                        "Alta": ALTO_ESG,
-                        "Média": MEDIO_ESG,
-                        "Baixa": BAIXO_ESG
-                    },
-                    labels={"categoria_produto": "Categoria de Produto", "Quantidade": "Clientes"}
-                )
-        
-                fig_categoria.update_layout(
-                    height=450,
-                    bargap=0.25,
-                    plot_bgcolor="#111111",
-                    paper_bgcolor="#111111",
-                    font_color="#FFFFFF",
-                    legend_title_text="Faixa ESG"
-                )
-        
-                st.plotly_chart(fig_categoria, use_container_width=True)
-            else:
-                st.warning("Colunas necessárias não encontradas: 'categoria_produto' ou 'faixa_propensao'.")
-            
-            st.markdown("### 🌟 Top 15 Clientes: Maior Capital e Maior Propensão ESG")
+            # Agrupar corretamente
+            agrupado = vencendo_30.groupby(["perfil_risco", "faixa_propensao"]).size().reset_index(name="Quantidade")
     
-            if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
-                # Calcular score baseado em capital * propensão
-                df_temp = df.copy()
-                df_temp["score"] = df_temp["ValorEmCaixa"] * df_temp["propensao_esg"]
-                top_oportunidades = df_temp.sort_values(by="score", ascending=False).head(15)
+            fig_vencendo = px.bar(
+                agrupado,
+                x="perfil_risco",
+                y="Quantidade",
+                color="faixa_propensao",
+                barmode="group",  # ← garante colunas agrupadas
+                title="Clientes com Ativos ESG Próximos do Vencimento",
+                color_discrete_map={
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
+                },
+                labels={"perfil_risco": "Perfil de Risco", "Quantidade": "Clientes"}
+            )
+    
+            fig_vencendo.update_layout(
+                height=450,
+                bargap=0.2,
+                plot_bgcolor="#111111",
+                paper_bgcolor="#111111",
+                font_color="#FFFFFF",
+                legend_title_text="Faixa ESG"
+            )
+    
+            st.plotly_chart(fig_vencendo, use_container_width=True)
+        else:
+            st.warning("Coluna 'vence_em_dias' não encontrada na base.")
+
+    
+        st.markdown("### 📦 Distribuição de Clientes por Categoria de Produto e Faixa ESG")
+    
+        if "categoria_produto" in df.columns and "faixa_propensao" in df.columns:
+            agrupado = df.groupby(["categoria_produto", "faixa_propensao"]).size().reset_index(name="Quantidade")
+    
+            fig_categoria = px.bar(
+                agrupado,
+                x="categoria_produto",
+                y="Quantidade",
+                color="faixa_propensao",
+                barmode="group",
+                title="Clientes por Categoria de Produto e Faixa ESG",
+                color_discrete_map={
+                    "Alta": ALTO_ESG,
+                    "Média": MEDIO_ESG,
+                    "Baixa": BAIXO_ESG
+                },
+                labels={"categoria_produto": "Categoria de Produto", "Quantidade": "Clientes"}
+            )
+    
+            fig_categoria.update_layout(
+                height=450,
+                bargap=0.25,
+                plot_bgcolor="#111111",
+                paper_bgcolor="#111111",
+                font_color="#FFFFFF",
+                legend_title_text="Faixa ESG"
+            )
+    
+            st.plotly_chart(fig_categoria, use_container_width=True)
+        else:
+            st.warning("Colunas necessárias não encontradas: 'categoria_produto' ou 'faixa_propensao'.")
         
-                fig_top = px.scatter(
-                    top_oportunidades,
-                    x="propensao_esg",
-                    y="ValorEmCaixa",
-                    hover_name="nome",
-                    labels={
-                        "propensao_esg": "Propensão ESG",
-                        "ValorEmCaixa": "Capital Disponível (R$)"
-                    },
-                    title="Top 15 Clientes com Maior Capital e Propensão ESG"
-                )
-        
-                fig_top.update_traces(
-                    marker=dict(color= ALTO_ESG, size=12, line=dict(width=1, color='black')),
-                    hovertemplate="<b>%{hovertext}</b><br>Propensão: %{x:.2f}<br>Capital: R$ %{y:,.2f}<extra></extra>"
-                )
-        
-                fig_top.update_layout(height=500)
-                st.plotly_chart(fig_top, use_container_width=True)
-            else:
-                st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
+        st.markdown("### 🌟 Top 15 Clientes: Maior Capital e Maior Propensão ESG")
+
+        if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
+            # Calcular score baseado em capital * propensão
+            df_temp = df.copy()
+            df_temp["score"] = df_temp["ValorEmCaixa"] * df_temp["propensao_esg"]
+            top_oportunidades = df_temp.sort_values(by="score", ascending=False).head(15)
+    
+            fig_top = px.scatter(
+                top_oportunidades,
+                x="propensao_esg",
+                y="ValorEmCaixa",
+                hover_name="nome",
+                labels={
+                    "propensao_esg": "Propensão ESG",
+                    "ValorEmCaixa": "Capital Disponível (R$)"
+                },
+                title="Top 15 Clientes com Maior Capital e Propensão ESG"
+            )
+    
+            fig_top.update_traces(
+                marker=dict(color= ALTO_ESG, size=12, line=dict(width=1, color='black')),
+                hovertemplate="<b>%{hovertext}</b><br>Propensão: %{x:.2f}<br>Capital: R$ %{y:,.2f}<extra></extra>"
+            )
+    
+            fig_top.update_layout(height=500)
+            st.plotly_chart(fig_top, use_container_width=True)
+        else:
+            st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
     elif aba == "📌 Recomendações":
         st.subheader("📌 Recomendações por Faixa ESG")
