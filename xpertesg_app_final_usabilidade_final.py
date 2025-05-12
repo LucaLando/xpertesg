@@ -231,120 +231,119 @@ if st.session_state.usuario:
         st.markdown("---")
             # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
         if "ValorAlocadoESG" not in df.columns:
-        df["ValorAlocadoESG"] = np.random.uniform(5000, 80000, size=len(df)).round(2)
+            df["ValorAlocadoESG"] = np.random.uniform(5000, 80000, size=len(df)).round(2)
             # 👇 Garantir que a coluna ValorTotalCarteira exista
         if "ValorTotalCarteira" not in df.columns:
         # Supondo que o restante da carteira seja 2x o valor ESG (ajuste conforme necessário)
-        df["ValorTotalCarteira"] = (df["ValorAlocadoESG"] * np.random.uniform(2.5, 5.0, size=len(df))).round(2)
+            df["ValorTotalCarteira"] = (df["ValorAlocadoESG"] * np.random.uniform(2.5, 5.0, size=len(df))).round(2)
                     st.markdown("---")
         st.subheader("🚀 Indicador de Alocação ESG")
             # Verificação das colunas no DataFrame
         if "ValorAlocadoESG" in df.columns and "ValorTotalCarteira" in df.columns:
             capital_total = df["ValorTotalCarteira"].sum()
-        capital_esg = df["ValorAlocadoESG"].sum()
+            capital_esg = df["ValorAlocadoESG"].sum()
             # Cálculo da proporção ESG (%)
         if capital_total > 0:
-        percentual_esg = round((capital_esg / capital_total) * 100, 2)
+            percentual_esg = round((capital_esg / capital_total) * 100, 2)
         else:
-        percentual_esg = 0.0
-            # Meta futura (%)
-        meta_percentual = 10  # você pode ajustar isso dinamicamente se quiser
-            # Construção do gráfico tipo "velocímetro"
-        fig_gauge = go.Figure(go.Indicator(
-        mode="gauge+number+delta",
-        value=percentual_esg,
-        delta={'reference': meta_percentual, 'increasing': {'color': ALTO_ESG}, 'decreasing': {'color': "red"}},
-        gauge={
-        'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': BAIXO_ESG},
-        'bar': {'color': ALTO_ESG, 'thickness': 0.3},
-        'bgcolor': BAIXO_ESG,
-        'steps': [
-        {'range': [0, percentual_esg], 'color': ALTO_ESG},
-        {'range': [percentual_esg, 100], 'color': BAIXO_ESG}
-        ],
-        'threshold': {
-        'line': {'color': COR_XP, 'width': 10},
-        'thickness': 1,
-        'value': meta_percentual
-        }
-        },
-        title={'text': "Proporção de Capital Alocado em ESG (%)"}
-        ))
-            fig_gauge.update_layout(
-        height=400,
-        font=dict(size=16),
-        paper_bgcolor="#111111",
-        plot_bgcolor="#111111",
-        font_color="white"
-        )
+            percentual_esg = 0.0
+                # Meta futura (%)
+            meta_percentual = 10  # você pode ajustar isso dinamicamente se quiser
+                # Construção do gráfico tipo "velocímetro"
+            fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number+delta",
+            value=percentual_esg,
+            delta={'reference': meta_percentual, 'increasing': {'color': ALTO_ESG}, 'decreasing': {'color': "red"}},
+            gauge={
+            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': BAIXO_ESG},
+            'bar': {'color': ALTO_ESG, 'thickness': 0.3},
+            'bgcolor': BAIXO_ESG,
+            'steps': [
+            {'range': [0, percentual_esg], 'color': ALTO_ESG},
+            {'range': [percentual_esg, 100], 'color': BAIXO_ESG}
+            ],
+            'threshold': {
+            'line': {'color': COR_XP, 'width': 10},
+            'thickness': 1,
+            'value': meta_percentual
+            }
+            },
+            title={'text': "Proporção de Capital Alocado em ESG (%)"}
+            ))
+                fig_gauge.update_layout(
+            height=400,
+            font=dict(size=16),
+            paper_bgcolor="#111111",
+            plot_bgcolor="#111111",
+            font_color="white"
+            )
             st.plotly_chart(fig_gauge, use_container_width=True)
             else:
-        st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
-                                _, col1, _ = st.columns(3)
-        st.markdown("---")
-        st.subheader("📊 Distribuição de Clientes por Faixa de Propensão")
-        with col1:
-        fig1 = px.pie(
-        df,
-        names="faixa_propensao",
-        title="Distribuição por Faixa ESG",
-        color="faixa_propensao",
-        color_discrete_map={
-        "Alta": ALTO_ESG,
-        "Média": MEDIO_ESG,
-        "Baixa": BAIXO_ESG
-        }
-        )
-        fig1.update_traces(textinfo="label+percent")
-        st.plotly_chart(fig1, use_container_width=True)
-            col3, col4, col5 = st.columns(3)
-        with col3:
-        st.markdown("---")
-        st.subheader("🔝 Top 5 Clientes por Faixa ESG")
-        st.markdown("Esses são os principais clientes com maior propensão ESG dentro de cada faixa:")
-        with col3:
-        st.markdown("#### Faixa Baixa")
-        st.dataframe(top_baixa[["nome", "propensao_esg", "PerfilRisco"]])
-        with col4:
-        with col4:
-        st.markdown("#### Faixa Média")
-        st.dataframe(top_media[["nome", "propensao_esg", "PerfilRisco"]])
-        with col5:
-        with col5:
-        st.markdown("#### Faixa Alta")
-        st.dataframe(top_alta[["nome", "propensao_esg", "PerfilRisco"]])
-                # NOVOS GRÁFICOS E INSIGHTS ESG
+                st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
+        
+        _, col1, _ = st.columns(3)
             st.markdown("---")
-        st.subheader("⏳ Clientes com Ativos ESG Vencendo em até 30 dias")
+            st.subheader("📊 Distribuição de Clientes por Faixa de Propensão")
+        with col1:
+            fig1 = px.pie(
+            df,
+            names="faixa_propensao",
+            title="Distribuição por Faixa ESG",
+            color="faixa_propensao",
+            color_discrete_map={
+            "Alta": ALTO_ESG,
+            "Média": MEDIO_ESG,
+            "Baixa": BAIXO_ESG
+            }
+            )
+            fig1.update_traces(textinfo="label+percent")
+            st.plotly_chart(fig1, use_container_width=True)
+        col3, col4, col5 = st.columns(3)
+        with col3:
+            st.markdown("---")
+            st.subheader("🔝 Top 5 Clientes por Faixa ESG")
+            st.markdown("Esses são os principais clientes com maior propensão ESG dentro de cada faixa:")
+        with col3:
+            st.markdown("#### Faixa Baixa")
+            st.dataframe(top_baixa[["nome", "propensao_esg", "PerfilRisco"]])
+            with col4:
+            st.markdown("#### Faixa Média")
+            st.dataframe(top_media[["nome", "propensao_esg", "PerfilRisco"]])
+        with col5:
+            st.markdown("#### Faixa Alta")
+            st.dataframe(top_alta[["nome", "propensao_esg", "PerfilRisco"]])
+                    # NOVOS GRÁFICOS E INSIGHTS ESG
+            st.markdown("---")
+            st.subheader("⏳ Clientes com Ativos ESG Vencendo em até 30 dias")
             if "vence_em_dias" in df.columns:
-        vencendo_30 = df[df["vence_em_dias"] <= 30]
+                vencendo_30 = df[df["vence_em_dias"] <= 30]
             # Agrupar corretamente
-        agrupado = vencendo_30.groupby(["PerfilRisco", "faixa_propensao"]).size().reset_index(name="Quantidade")
-            fig_vencendo = px.bar(
-        agrupado,
-        x="PerfilRisco",
-        y="Quantidade",
-        color="faixa_propensao",
-        barmode="group",  # ← garante colunas agrupadas
-        title="Clientes com Ativos ESG Próximos do Vencimento",
-        color_discrete_map={
-        "Alta": ALTO_ESG,
-        "Média": MEDIO_ESG,
-        "Baixa": BAIXO_ESG
-        },
-        labels={"PerfilRisco": "Perfil de Risco", "Quantidade": "Clientes"}
-        )
-            fig_vencendo.update_layout(
-        height=450,
-        bargap=0.2,
-        plot_bgcolor="#111111",
-        paper_bgcolor="#111111",
-        font_color="#FFFFFF",
-        legend_title_text="Faixa ESG"
-        )
-            st.plotly_chart(fig_vencendo, use_container_width=True)
+                agrupado = vencendo_30.groupby(["PerfilRisco", "faixa_propensao"]).size().reset_index(name="Quantidade")
+                fig_vencendo = px.bar(
+                agrupado,
+                x="PerfilRisco",
+                y="Quantidade",
+                color="faixa_propensao",
+                barmode="group",  # ← garante colunas agrupadas
+                title="Clientes com Ativos ESG Próximos do Vencimento",
+                color_discrete_map={
+                "Alta": ALTO_ESG,
+                "Média": MEDIO_ESG,
+                "Baixa": BAIXO_ESG
+                },
+                labels={"PerfilRisco": "Perfil de Risco", "Quantidade": "Clientes"}
+                )
+                fig_vencendo.update_layout(
+                height=450,
+                bargap=0.2,
+                plot_bgcolor="#111111",
+                paper_bgcolor="#111111",
+                font_color="#FFFFFF",
+                legend_title_text="Faixa ESG"
+                )
+                st.plotly_chart(fig_vencendo, use_container_width=True)
         else:
-        st.warning("Coluna 'vence_em_dias' não encontrada na base.")
+            st.warning("Coluna 'vence_em_dias' não encontrada na base.")
                 st.markdown("---")
         st.subheader("📦 Distribuição por Produto e Faixa ESG")
             if "categoria_produto" in df.columns and "faixa_propensao" in df.columns:
