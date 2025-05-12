@@ -14,7 +14,7 @@ MEDIO_ESG = "#2BACB4"
 BAIXO_ESG = "#ADA9BD"
 
 # Dados simulados
-df = pd.read_csv("base_clientes_ml_completa_com_nomes.csv")
+df = pd.read_csv("base2_clientes_esg10000.csv")
 # Garante colunas mínimas para o gráfico de dispersão
 
 top_baixa = df[df["faixa_propensao"] == "Baixa"].nlargest(5, "propensao_esg")
