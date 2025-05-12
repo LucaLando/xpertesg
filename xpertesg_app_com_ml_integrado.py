@@ -1,7 +1,6 @@
 import numpy as np
 import streamlit as st
 import pandas as pd
-from modelo_ml_integrado import simular_base_clientes, carregar_modelo_pipeline
 import plotly.express as px
 import openai
 import os
@@ -14,8 +13,8 @@ ALTO_ESG = "#04C427"
 MEDIO_ESG = "#2BACB4"
 BAIXO_ESG = "#ADA9BD"
 
-# Dados simulados
-df = pd.read_csv("base_clientes_xpertesg_1000.csv")
+# Dados simuladosimport pandas as pd
+df = pd.read_csv("base_clientes_esg.csv")
 # Garante colunas mínimas para o gráfico de dispersão
 if "nome" not in df.columns:
     df["nome"] = [f"Cliente {i}" for i in range(len(df))]
