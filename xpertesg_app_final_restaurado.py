@@ -14,8 +14,7 @@ MEDIO_ESG = "#2BACB4"
 BAIXO_ESG = "#ADA9BD"
 
 # Dados simulados
-df = pd.read_csv("base4_clientes_esg10000.csv")
-df = df.sample(n=1000, random_state=42)
+df = pd.read_csv("base5_clientes_esg10000.csv")
 
 # Garante colunas mínimas para o gráfico de dispersão
 
