@@ -56,7 +56,7 @@ if st.session_state.usuario:
     ])
 
     if aba == "👥 Clientes":
-        st.subheader("📋 Base de Clientes da XP (Simulada)")
+        st.subheader("📋 Base de Clientes da XP")
         st.dataframe(df, use_container_width=True)
 
     elif aba == "🗣️ Chat com o Fábio":
