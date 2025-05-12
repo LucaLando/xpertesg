@@ -61,6 +61,21 @@ df["nome"] = [random.choice(nomes) for _ in range(len(df))]
 
 
 
+# Classifica os clientes manualmente em faixas de propensão
+def classificar_faixa(p):
+    if p <= 0.40:
+        return "Baixa"
+    elif p <= 0.74:
+        return "Média"
+    else:
+        return "Alta"
+
+df["faixa_propensao"] = df["propensao_esg"].apply(classificar_faixa)
+
+
+
+
+
 top_baixa = df[df["faixa_propensao"] == "Baixa"].nlargest(5, "propensao_esg")
 top_media = df[df["faixa_propensao"] == "Média"].nlargest(5, "propensao_esg")
 top_alta = df[df["faixa_propensao"] == "Alta"].nlargest(5, "propensao_esg")
@@ -282,9 +297,14 @@ if st.session_state.usuario:
             
         _, col1, _ = st.columns(3)
         with col1:
+            # Corrige o agrupamento da distribuição por faixa
+            contagem_faixas = df["faixa_propensao"].value_counts().reset_index()
+            contagem_faixas.columns = ["faixa_propensao", "quantidade"]
+            
             fig1 = px.pie(
-                df,
+                contagem_faixas,
                 names="faixa_propensao",
+                values="quantidade",
                 title="Distribuição por Faixa ESG",
                 color="faixa_propensao",
                 color_discrete_map={
@@ -295,6 +315,7 @@ if st.session_state.usuario:
             )
             fig1.update_traces(textinfo="label+percent")
             st.plotly_chart(fig1, use_container_width=True)
+
 
         col3, col4, col5 = st.columns(3)
         with col3:
