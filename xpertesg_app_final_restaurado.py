@@ -14,8 +14,51 @@ MEDIO_ESG = "#2BACB4"
 BAIXO_ESG = "#ADA9BD"
 
 # Dados simulados
-df = pd.read_csv("base3_clientes_esg10000.csv")
+df = pd.read_csv("base4_clientes_esg10000.csv")
 # Garante colunas mínimas para o gráfico de dispersão
+
+
+# 🧾 Adicionar nome fictício com base no gênero
+nomes_masculinos = [
+    "Lucas", "João", "Pedro", "Rafael", "Gustavo", "Matheus", "Thiago", "Bruno", "Felipe", "André",
+    "Carlos", "Daniel", "Henrique", "Eduardo", "Leonardo", "Gabriel", "Caio", "Marcelo", "Igor", "Victor",
+    "Renato", "Rodrigo", "Alexandre", "Vitor", "Diego", "Fernando", "Ricardo", "Samuel", "Luan", "Fábio",
+    "Paulo", "Otávio", "Hugo", "Antônio", "Jonathan", "Roberto", "Vinicius", "Murilo", "Leandro", "Jorge",
+    "Elias", "Juliano", "Marcos", "Raul", "Estevão", "Heitor", "Nelson", "Brayan", "Caetano", "Wallace",
+    "Danilo", "Adriano", "Júnior", "Alfredo", "Valter", "Nathan", "Wesley", "Jeferson", "Maicon", "Ezequiel",
+    "Cristiano", "William", "Matias", "Eliseu", "Luciano", "Flávio", "Rogério", "Saulo", "Sérgio", "Davi",
+    "Érico", "Iago", "Emanuel", "Luiz", "Giovani", "Tiago", "Édson", "Silas", "Moisés", "Afonso",
+    "Douglas", "Washington", "Breno", "Joabe", "Geovani", "Ruan", "Nicolas", "Cláudio", "Alex", "Lázaro",
+    "Adriel", "Milton", "Rômulo", "Israel", "Anderson", "Tales", "Valmir", "Eron"
+]
+
+nomes_femininos = [
+    "Ana", "Beatriz", "Camila", "Daniela", "Eduarda", "Fernanda", "Gabriela", "Helena", "Isabela", "Juliana",
+    "Karen", "Larissa", "Mariana", "Natália", "Olívia", "Patrícia", "Queila", "Renata", "Sabrina", "Tatiane",
+    "Úrsula", "Vitória", "Wendy", "Ximena", "Yasmin", "Zuleika", "Aline", "Bianca", "Carolina", "Débora",
+    "Elaine", "Fabiana", "Giovana", "Heloísa", "Ingrid", "Jéssica", "Kátia", "Letícia", "Michele", "Nicole",
+    "Priscila", "Raquel", "Simone", "Tainá", "Vanessa", "Waleska", "Yara", "Zélia", "Amélia", "Bárbara",
+    "Clarissa", "Denise", "Estela", "Flávia", "Graziele", "Hortência", "Ione", "Joana", "Kelly", "Lilian",
+    "Mônica", "Noemi", "Odete", "Paloma", "Rafaela", "Sônia", "Tereza", "Valéria", "Wilma", "Zilda",
+    "Andressa", "Cíntia", "Dandara", "Emanuelle", "Francine", "Gláucia", "Hermínia", "Ivone", "Jacira", "Késia",
+    "Luzia", "Marta", "Nadja", "Orlanda", "Penélope", "Regina", "Sheila", "Talita", "Vera", "Zenaide",
+    "Aurora", "Celina", "Dalva", "Eliana", "Fabíola", "Gislaine", "Hilda", "Iraci", "Jacqueline", "Lúcia"
+]
+
+import random
+
+def gerar_nome(genero):
+    if genero == "Masculino":
+        return random.choice(nomes_masculinos)
+    elif genero == "Feminino":
+        return random.choice(nomes_femininos)
+    else:
+        return "Cliente XP"
+
+# Aplica nomes com base no gênero
+df["nome"] = df["Genero"].apply(gerar_nome)
+
+
 
 top_baixa = df[df["faixa_propensao"] == "Baixa"].nlargest(5, "propensao_esg")
 top_media = df[df["faixa_propensao"] == "Média"].nlargest(5, "propensao_esg")
