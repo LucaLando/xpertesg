@@ -227,8 +227,8 @@ if st.session_state.usuario:
 
     elif aba == "📈 Dashboards":
         st.header("📊 Análise ESG da Base de Clientes")
-st.markdown("Explore aqui os dados da sua base de clientes com foco em propensão ESG, perfil de risco e potenciais oportunidades.")
-st.markdown("---")
+        st.markdown("Explore aqui os dados da sua base de clientes com foco em propensão ESG, perfil de risco e potenciais oportunidades.")
+        st.markdown("---")
 
         # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
         if "ValorAlocadoESG" not in df.columns:
