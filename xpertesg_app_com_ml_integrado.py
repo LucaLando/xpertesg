@@ -15,6 +15,9 @@ BAIXO_ESG = "#ADA9BD"
 
 # Dados simuladosimport pandas as pd
 df = pd.read_csv("base_clientes_esg.csv")
+X = df.drop(columns=["nome"], errors="ignore")
+df["propensao_esg"] = modelo.predict_proba(X)[:, 1]
+
 # Garante colunas mínimas para o gráfico de dispersão
 if "nome" not in df.columns:
     df["nome"] = [f"Cliente {i}" for i in range(len(df))]
