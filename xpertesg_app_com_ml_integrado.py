@@ -63,8 +63,18 @@ if st.session_state.usuario:
     ])
 
     if aba == "👥 Clientes":
-        st.subheader("📋 Base de Clientes da XP (Simulada)")
-        st.dataframe(df, use_container_width=True)
+        st.subheader("📋 Base de Clientes com Propensão ESG (via Modelo)")
+    
+        # Exibe apenas as colunas mais relevantes
+        colunas_visiveis = [
+            "nome", "idade", "perfil_risco", "renda_mensal",
+            "engajamento_esg", "conhecimento_esg", "propensao_esg", "faixa_propensao"
+        ]
+        
+        # Verifica se essas colunas existem no DataFrame
+        colunas_disponiveis = [col for col in colunas_visiveis if col in df.columns]
+    
+        st.dataframe(df[colunas_disponiveis], use_container_width=True)
 
     elif aba == "🗣️ Chat com o Fábio":
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
