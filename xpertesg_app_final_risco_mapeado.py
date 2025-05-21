@@ -121,6 +121,7 @@ if st.session_state.usuario:
 
     elif aba == "🗣️ Chat com o Fábio":
         import re
+        import pandas as pd
     
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
     
@@ -129,54 +130,31 @@ if st.session_state.usuario:
             st.session_state.api_key = ""
         with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
             st.session_state.api_key = st.text_input(
-                "Cole aqui sua API Key:",
-                type="password",
+                "Cole aqui sua API Key:", 
+                type="password", 
                 key="openai_api_key"
             )
     
-        # ——— Inicializa histórico ———
+        # ——— Carrega histórico e base de clientes ———
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
+        @st.cache_data
+        def load_clients(path="base5_clientes_esg10000.csv"):
+            return pd.read_csv(path)
+        if "df_clientes" not in st.session_state:
+            st.session_state.df_clientes = load_clients()
+        df = st.session_state.df_clientes
     
-        # ——— Prepara DataFrame de clientes (usa o df global já modificado) ———
-        # Garante uma coluna de ID sequencial
-        df_clientes = df.copy()
-        if "ID" not in df_clientes.columns:
-            df_clientes.insert(0, "ID", df_clientes.index + 1)
+        # ——— Detecta coluna de ID ———
+        id_col = next((c for c in df.columns if "id" in c.lower()), None)
+        if not id_col:
+            st.error("Coluna de ID não encontrada na base de clientes.")
+            st.stop()
     
-        # ——— Exibe histórico de chat ———
-        for msg in st.session_state.mensagens:
-            st.chat_message(msg["role"]).write(msg["content"])
-    
-        # ——— Campo de entrada fixo no rodapé (Enter envia e limpa) ———
-        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
-    
-        if user_input:
-            # 1) adiciona pergunta ao histórico
-            st.session_state.mensagens.append({
-                "role": "user",
-                "content": user_input
-            })
-    
-            # 2) monta contexto de cliente se user_input mencionar "cliente <ID>"
-            client_context = None
-            m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
-            if m:
-                cli_id = int(m.group(1))
-                if cli_id in df_clientes["ID"].values:
-                    rec = df_clientes.loc[df_clientes["ID"] == cli_id].iloc[0]
-                    client_context = (
-                        f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Nome: {rec['nome']}\n"
-                        f"• Idade: {rec['Idade']}\n"
-                        f"• Perfil de risco: {rec['PerfilRisco']}\n"
-                        f"• Propensão ESG: {rec['propensao_esg']}\n"
-                    )
-    
-            # 3) System Prompt completo
-            system_prompt = {
-                "role": "system",
-                "content": """
+        # ——— Define o System Prompt completo ———
+        system_prompt = {
+            "role": "system",
+            "content": """
     Você é o Fabio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado para assessores de investimentos da própria XP.
     
     Seu papel é fornecer orientação técnica, estratégica e educacional sobre a alocação de capital em produtos com perfil ESG, considerando sempre:
@@ -184,42 +162,37 @@ if st.session_state.usuario:
     - O perfil de risco do cliente.
     - O grau de propensão ESG do cliente (quando informado).
     - As diretrizes regulatórias e reputacionais da XP Inc.
+    [...todo o restante do seu prompt...]
     
-    🧠 CONHECIMENTO E COMPORTAMENTO
-    Você é especialista em:
-    • Fundos ESG (FIA, FIP, FIE, FIDC ESG, etc.)
-    • Debêntures e COEs com propósito ESG
-    • Certificados como CPR Verde, créditos de carbono, e ativos ambientais
-    • Critérios ESG usados pela XP (ex: SASB, ICVM 59, Taxonomia Verde)
-    • Alinhamento a padrões internacionais (ODS 2030, Selo B, CSA da S&P etc.)
-    
-    Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
-    Quando não souber ou não puder afirmar algo com segurança, diga:
-    "Para garantir precisão, recomendo consultar a área de produtos ou compliance da XP."
-    
-    🔍 FONTES E ATUALIZAÇÕES
-    Você pode acessar os sites oficiais da XP para dados atualizados:
-    https://conteudos.xpi.com.br/esg/
-    https://www.xpi.com.br
-    https://conteudos.xpi.com.br
-    
-    📂 BASES DISPONÍVEIS
-    Você possui acesso à base de clientes em base5_clientes_esg10000.csv.
-    
-    🎯 ORIENTAÇÃO AO ASSESSOR
-    Você atua exclusivamente com assessores da XP:
-    - Nunca fale diretamente com o cliente final.
-    - Sempre oriente com base em dados técnicos, não em preferências pessoais.
-    - Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível.
-    
-    ⚠️ RESTRIÇÕES DE CONDUTA
-    - Sem recomendações de suitability.
-    - Sem interpretação legal, apenas cite regulação ICVM 59 ou Taxonomia Verde.
-    - Em temas sensíveis, recomende canais internos da XP.
     """
-            }
+        }
     
-            # 4) Agrupa todas as mensagens e chama a API
+        # ——— Renderiza histórico e espera input ———
+        # (não renderizamos aqui, pois faremos no mesmo bloco após o input)
+        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
+    
+        if user_input:
+            # 1) Exibe e armazena a pergunta imediatamente
+            st.chat_message("user").write(user_input)
+            st.session_state.mensagens.append({"role": "user", "content": user_input})
+    
+            # 2) Extrai contexto de cliente, se houver
+            client_context = None
+            m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
+            if m:
+                cli_id = int(m.group(1))
+                if cli_id in df[id_col].values:
+                    rec = df.loc[df[id_col] == cli_id].iloc[0]
+                    client_context = (
+                        f"DADOS DO CLIENTE {cli_id}:\n"
+                        f"• Nome: {rec.get('Nome', '—')}\n"
+                        f"• Idade: {rec.get('Idade', '—')}\n"
+                        f"• Perfil de risco: {rec.get('PerfilRisco', '—')}\n"
+                        f"• Engajamento ESG: {rec.get('EngajamentoESG', '—')}\n"
+                        f"• Propensão ESG: {rec.get('PropensaoESG', '—')}\n"
+                    )
+    
+            # 3) Monta mensagens e chama a API
             full_messages = [system_prompt]
             if client_context:
                 full_messages.append({"role": "system", "content": client_context})
@@ -238,15 +211,15 @@ if st.session_state.usuario:
             except Exception as e:
                 resposta_fabio = f"Erro na chamada à API: {e}"
     
-            # 5) adiciona resposta ao histórico e salva
+            # 4) Exibe e armazena a resposta imediatamente
+            st.chat_message("assistant").write(resposta_fabio)
             st.session_state.mensagens.append({
-                "role": "assistant",
+                "role": "assistant", 
                 "content": resposta_fabio
             })
-            salvar_historico(st.session_state.usuario, st.session_state.mensagens)
-
     
-
+            # 5) Persiste histórico
+            salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
     elif aba == "📦 Produtos ESG":
         st.subheader("🌱 Produtos ESG disponíveis")
