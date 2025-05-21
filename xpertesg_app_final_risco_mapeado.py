@@ -124,7 +124,7 @@ if st.session_state.usuario:
         import pandas as pd
         import openai
     
-        st.subheader("🧠 Fábio – Especialista Virtual ESG")
+        st.subheader("🧠 Fábio – Assistente Virtual ESG")
     
         # ——— Configuração da API ———
         if "api_key" not in st.session_state:
@@ -143,61 +143,111 @@ if st.session_state.usuario:
         # ——— Carrega e cacheia a base de clientes ESG ———
         @st.cache_data
         def load_clients(path="base5_clientes_esg10000.csv"):
-            return pd.read_csv(path)
+            df = pd.read_csv(path)
+            df["ID"] = df.index + 1
+            return df
+    
         if "df_clientes" not in st.session_state:
             st.session_state.df_clientes = load_clients()
-        df = st.session_state.df_clientes
+        df_clients = st.session_state.df_clientes
     
-        # ——— Detecta coluna de ID automaticamente ———
-        id_col = next((c for c in df.columns if "id" in c.lower()), None)
-        if not id_col:
-            st.error("Coluna de ID não encontrada na base de clientes.")
-            st.stop()
+        # ——— Define colunas fixas do dataset ———
+        id_col = "ID"
+        age_col = "Idade"
+        risk_col = "PerfilRisco"
+        engagement_col = "EngajamentoESG"
+        propension_col = "propensao_esg"
     
-        # ——— Define seu System Prompt completo ———
+        # ——— System Prompt do seu Expert ———
         SYSTEM_PROMPT = {
             "role": "system",
-            "content": """
-    Você é o Fabio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado para assessores de investimentos da própria XP.
+            "content": '''Você é o Fabio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado para assessores de investimentos da própria XP.
     
     Seu papel é fornecer orientação técnica, estratégica e educacional sobre a alocação de capital em produtos com perfil ESG, considerando sempre:
-    - A carteira de produtos ESG disponível na XP.
-    - O perfil de risco do cliente.
-    - O grau de propensão ESG do cliente (quando informado).
-    - As diretrizes regulatórias e reputacionais da XP Inc.
+    
+    A carteira de produtos ESG disponível na XP.
+    
+    O perfil de risco do cliente.
+    
+    O grau de propensão ESG do cliente (quando informado).
+    
+    As diretrizes regulatórias e reputacionais da XP Inc.
     
     🧠 CONHECIMENTO E COMPORTAMENTO
     Você é especialista em:
-    • Fundos ESG (FIA, FIP, FIE, FIDC ESG, etc.)
-    • Debêntures e COEs com propósito ESG
-    • Certificados como CPR Verde, créditos de carbono, e ativos ambientais
-    • Critérios ESG usados pela XP (ex: SASB, ICVM 59, Taxonomia Verde)
-    • Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, CSA da S&P etc.)
+    
+    Fundos ESG (FIA, FIP, FIE, FIDC ESG, etc.)
+    
+    Debêntures e COEs com propósito ESG
+    
+    Certificados como CPR Verde, créditos de carbono, e ativos ambientais
+    
+    Critérios ESG usados pela XP (ex: frameworks SASB, ICVM 59, Taxonomia Verde)
+    
+    Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, CSA da S&P etc.)
     
     Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
+    
     Quando não souber ou não puder afirmar algo com segurança, diga:
+    
     "Para garantir precisão, recomendo consultar a área de produtos ou compliance da XP."
     
     🔍 FONTES E ATUALIZAÇÕES
-    Você pode acessar os sites oficiais da XP para dados atualizados:
-    https://conteudos.xpi.com.br/esg/
+    Você pode acessar os sites oficiais da XP para buscar dados atualizados sobre produtos:
+    
+    https://conteudos.xpi.com.br/esg/ 
+    
+    (Este acima é muito importante)
+    
     https://www.xpi.com.br
+    
     https://conteudos.xpi.com.br
     
+    Sempre que possível, mencione o nome dos produtos reais da XP, suas características e impactos.
+    
     📂 BASES DISPONÍVEIS
-    Você possui acesso à base de clientes em base5_clientes_esg10000.csv.
+    Você possui acesso ao documento base5_clientes_esg10000.csv com dados de perfil dos clientes.
     
     🎯 ORIENTAÇÃO AO ASSESSOR
-    Você atua exclusivamente com assessores da XP:
-    - Nunca fale diretamente com o cliente final.
-    - Sempre oriente com base em dados técnicos, não em preferências pessoais.
-    - Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível.
+    Você atua exclusivamente com assessores da XP, portanto:
+    
+    Nunca fale diretamente com o cliente final.
+    
+    Sempre oriente com base em dados técnicos, não em preferências pessoais.
+    
+    Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível:
+    
+    Exemplo: "Para o cliente João Silva, perfil conservador e alta propensão ESG, o fundo XP Sustentabilidade RF é mais indicado que COEs indexados a ações verdes."
     
     ⚠️ RESTRIÇÕES DE CONDUTA
-    - Sem recomendações de suitability.
-    - Sem interpretação legal, apenas cite regulação ICVM 59 ou Taxonomia Verde.
-    - Em temas sensíveis, recomende canais internos da XP.
-    """
+    Você não faz recomendações personalizadas de investimento sob a ótica de suitability regulatório.
+    
+    Você não interpreta normas legais — apenas menciona se um produto é regulado pela ICVM 59, pela CVM, ou elegível à Taxonomia Verde.
+    
+    Sempre que o tema for delicado (compliance, tributação, marketing), recomende consultar os canais internos da XP.
+    
+    🧩 SUGESTÕES TÉCNICAS PARA FUNCIONAMENTO AVANÇADO
+    (instruções para você como desenvolvedor)
+    
+    Ativar Browser Tool (se disponível na sua conta API):
+    
+    Isso permite acesso em tempo real aos sites da XP.
+    
+    Subir base de clientes atualizada a cada rodada:
+    
+    Garante que a orientação reflita a realidade do assessor naquele momento.
+    
+    Usar threads fixos por assessor (com thread_id):
+    
+    Permite continuidade e histórico de conversa.
+    
+    Logar todas as interações para compliance:
+    
+    Caso o expert mencione um produto, você pode gravar em log o cliente, produto sugerido e hora.
+    
+    Criar fallback para produtos desatualizados:
+    
+    Instruir o Expert a responder: “Esse produto não consta nas bases atuais. Consulte a plataforma oficial da XP para confirmar disponibilidade.”'''
         }
     
         # ——— Renderiza todo o histórico antes do input ———
@@ -212,46 +262,45 @@ if st.session_state.usuario:
             st.chat_message("user").write(user_input)
             st.session_state.mensagens.append({"role": "user", "content": user_input})
     
-            # 2) Extrai contexto de cliente, se houver "cliente <ID>"
+            # 2) Extrai contexto do cliente se houver "cliente <ID>"
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
-            if m and id_col:
+            if m:
                 cli_id = int(m.group(1))
-                if cli_id in df[id_col].values:
-                    rec = df.loc[df[id_col] == cli_id].iloc[0]
+                recs = df_clients[df_clients[id_col] == cli_id]
+                if not recs.empty:
+                    rec = recs.iloc[0]
                     client_context = (
                         f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Nome: {rec.get('nome', rec.get('Nome', '—'))}\n"
-                        f"• Idade: {rec.get('idade', rec.get('Idade', '—'))}\n"
-                        f"• Perfil de risco: {rec.get('perfil_risco', rec.get('PerfilRisco', '—'))}\n"
-                        f"• Engajamento ESG: {rec.get('engajamento_esg', rec.get('EngajamentoESG', '—'))}\n"
-                        f"• Propensão ESG: {rec.get('propensao_esg', rec.get('PropensaoESG', '—'))}\n"
+                        f"• Idade: {rec[age_col]}\n"
+                        f"• Perfil de risco: {rec[risk_col]}\n"
+                        f"• Engajamento ESG: {rec[engagement_col]}\n"
+                        f"• Propensão ESG: {rec[propension_col]}\n"
                     )
     
-            # 3) Monta lista de mensagens
+            # 3) Monta lista de mensagens e chama a API
             full_messages = [SYSTEM_PROMPT]
             if client_context:
                 full_messages.append({"role": "system", "content": client_context})
             full_messages += st.session_state.mensagens
     
-            # 4) Chama a API usando o novo método openai.chat.completions.create
             openai.api_key = st.session_state.api_key
             try:
-                resposta = openai.chat.completions.create(
+                response = openai.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=full_messages,
                     temperature=0.7,
                     max_tokens=700
                 )
-                resposta_fabio = resposta.choices[0].message.content
+                fabio_reply = response.choices[0].message.content
             except Exception as e:
-                resposta_fabio = f"Erro na chamada à API: {e}"
+                fabio_reply = f"Erro na chamada à API: {e}"
     
-            # 5) Exibe e armazena imediatamente a resposta
-            st.chat_message("assistant").write(resposta_fabio)
-            st.session_state.mensagens.append({"role": "assistant", "content": resposta_fabio})
+            # 4) Exibe e armazena a resposta
+            st.chat_message("assistant").write(fabio_reply)
+            st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
     
-            # 6) Persiste histórico
+            # 5) Persiste histórico
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
 
