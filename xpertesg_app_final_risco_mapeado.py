@@ -122,22 +122,25 @@ if st.session_state.usuario:
     elif aba == "🗣️ Chat com o Fábio":
         import re
         import pandas as pd
+        import openai
     
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
     
-        # ——— Configurar API Key ———
+        # ——— Configuração da API ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
         with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
             st.session_state.api_key = st.text_input(
-                "Cole aqui sua API Key:", 
-                type="password", 
+                "Cole aqui sua API Key:",
+                type="password",
                 key="openai_api_key"
             )
     
-        # ——— Carrega histórico e base de clientes ———
+        # ——— Histórico de mensagens ———
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
+    
+        # ——— Carrega e cacheia a base de clientes ESG ———
         @st.cache_data
         def load_clients(path="base5_clientes_esg10000.csv"):
             return pd.read_csv(path)
@@ -145,14 +148,14 @@ if st.session_state.usuario:
             st.session_state.df_clientes = load_clients()
         df = st.session_state.df_clientes
     
-        # ——— Detecta coluna de ID ———
+        # ——— Detecta coluna de ID automaticamente ———
         id_col = next((c for c in df.columns if "id" in c.lower()), None)
         if not id_col:
             st.error("Coluna de ID não encontrada na base de clientes.")
             st.stop()
     
-        # ——— Define o System Prompt completo ———
-        system_prompt = {
+        # ——— Define seu System Prompt completo ———
+        SYSTEM_PROMPT = {
             "role": "system",
             "content": """
     Você é o Fabio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado para assessores de investimentos da própria XP.
@@ -162,53 +165,78 @@ if st.session_state.usuario:
     - O perfil de risco do cliente.
     - O grau de propensão ESG do cliente (quando informado).
     - As diretrizes regulatórias e reputacionais da XP Inc.
-    [...todo o restante do seu prompt...]
     
+    🧠 CONHECIMENTO E COMPORTAMENTO
+    Você é especialista em:
+    • Fundos ESG (FIA, FIP, FIE, FIDC ESG, etc.)
+    • Debêntures e COEs com propósito ESG
+    • Certificados como CPR Verde, créditos de carbono, e ativos ambientais
+    • Critérios ESG usados pela XP (ex: SASB, ICVM 59, Taxonomia Verde)
+    • Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, CSA da S&P etc.)
+    
+    Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
+    Quando não souber ou não puder afirmar algo com segurança, diga:
+    "Para garantir precisão, recomendo consultar a área de produtos ou compliance da XP."
+    
+    🔍 FONTES E ATUALIZAÇÕES
+    Você pode acessar os sites oficiais da XP para dados atualizados:
+    https://conteudos.xpi.com.br/esg/
+    https://www.xpi.com.br
+    https://conteudos.xpi.com.br
+    
+    📂 BASES DISPONÍVEIS
+    Você possui acesso à base de clientes em base5_clientes_esg10000.csv.
+    
+    🎯 ORIENTAÇÃO AO ASSESSOR
+    Você atua exclusivamente com assessores da XP:
+    - Nunca fale diretamente com o cliente final.
+    - Sempre oriente com base em dados técnicos, não em preferências pessoais.
+    - Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível.
+    
+    ⚠️ RESTRIÇÕES DE CONDUTA
+    - Sem recomendações de suitability.
+    - Sem interpretação legal, apenas cite regulação ICVM 59 ou Taxonomia Verde.
+    - Em temas sensíveis, recomende canais internos da XP.
     """
         }
     
-        # ——— Renderiza histórico e espera input ———
-        # (não renderizamos aqui, pois faremos no mesmo bloco após o input)
-        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
-
-                # ——— Renderize todo o histórico ANTES do input ———
+        # ——— Renderiza todo o histórico antes do input ———
         for msg in st.session_state.mensagens:
             st.chat_message(msg["role"]).write(msg["content"])
-        
+    
         # ——— Campo de input fixo no rodapé ———
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
         if user_input:
-            # 1) Exibe e armazena a pergunta imediatamente
+            # 1) Exibe e armazena imediatamente a pergunta
             st.chat_message("user").write(user_input)
             st.session_state.mensagens.append({"role": "user", "content": user_input})
     
-            # 2) Extrai contexto de cliente, se houver
+            # 2) Extrai contexto de cliente, se houver "cliente <ID>"
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
-            if m:
+            if m and id_col:
                 cli_id = int(m.group(1))
                 if cli_id in df[id_col].values:
                     rec = df.loc[df[id_col] == cli_id].iloc[0]
                     client_context = (
                         f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Nome: {rec.get('Nome', '—')}\n"
-                        f"• Idade: {rec.get('Idade', '—')}\n"
-                        f"• Perfil de risco: {rec.get('PerfilRisco', '—')}\n"
-                        f"• Engajamento ESG: {rec.get('EngajamentoESG', '—')}\n"
-                        f"• Propensão ESG: {rec.get('PropensaoESG', '—')}\n"
+                        f"• Nome: {rec.get('nome', rec.get('Nome', '—'))}\n"
+                        f"• Idade: {rec.get('idade', rec.get('Idade', '—'))}\n"
+                        f"• Perfil de risco: {rec.get('perfil_risco', rec.get('PerfilRisco', '—'))}\n"
+                        f"• Engajamento ESG: {rec.get('engajamento_esg', rec.get('EngajamentoESG', '—'))}\n"
+                        f"• Propensão ESG: {rec.get('propensao_esg', rec.get('PropensaoESG', '—'))}\n"
                     )
     
-            # 3) Monta mensagens e chama a API
-            full_messages = [system_prompt]
+            # 3) Monta lista de mensagens e chama a API
+            full_messages = [SYSTEM_PROMPT]
             if client_context:
                 full_messages.append({"role": "system", "content": client_context})
             full_messages += st.session_state.mensagens
     
             try:
-                import openai
-                client = openai.OpenAI(api_key=st.session_state.api_key)
-                resposta = client.chat.completions.create(
+                openai.api_key = st.session_state.api_key
+                resposta = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=full_messages,
                     temperature=0.7,
@@ -218,15 +246,13 @@ if st.session_state.usuario:
             except Exception as e:
                 resposta_fabio = f"Erro na chamada à API: {e}"
     
-            # 4) Exibe e armazena a resposta imediatamente
+            # 4) Exibe e armazena imediatamente a resposta
             st.chat_message("assistant").write(resposta_fabio)
-            st.session_state.mensagens.append({
-                "role": "assistant", 
-                "content": resposta_fabio
-            })
+            st.session_state.mensagens.append({"role": "assistant", "content": resposta_fabio})
     
             # 5) Persiste histórico
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+
 
     elif aba == "📦 Produtos ESG":
         st.subheader("🌱 Produtos ESG disponíveis")
