@@ -233,57 +233,61 @@ if st.session_state.usuario:
     }
 
     
-        # ——— 6) Exibe todo o histórico antes do input ———
+        # ——— Renderiza histórico antes do input ———
         for msg in st.session_state.mensagens:
             st.chat_message(msg["role"]).write(msg["content"])
-    
-        # ——— 7) Campo de input fixo no rodapé ———
+        
+        # ——— Campo de input fixo no rodapé ———
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
-    
+        
         if user_input:
-            # a) exibe e armazena a pergunta
+            # Exibe e armazena a pergunta
             st.chat_message("user").write(user_input)
             st.session_state.mensagens.append({"role": "user", "content": user_input})
-    
-            # b) extrai contexto do cliente
-            client_context = None
+        
+            # 1) Extrai um novo ID se houver menção “cliente <n>”
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
             if m:
                 cli_id = int(m.group(1))
-                rec = df_clients.loc[df_clients[id_col] == cli_id]
+                st.session_state.last_client_id = cli_id   # <-- guarda o ID na sessão
+            else:
+                # se não mencionou, tenta usar o último
+                cli_id = st.session_state.get("last_client_id", None)
+        
+            # 2) Gera o contexto se tiver cli_id
+            client_context = None
+            if cli_id is not None:
+                rec = df_clients.loc[df_clients["ID"] == cli_id]
                 if not rec.empty:
                     rec = rec.iloc[0]
+                    port_str = "\n".join([f"• {k}: R$ {v:,.2f}" for k,v in rec["Carteira"].items()])
                     client_context = (
                         f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Idade: {rec[age_col]}\n"
-                        f"• Perfil de risco: {rec[risk_col]}\n"
-                        f"• Engajamento ESG: {rec[engagement_col]}\n"
-                        f"• Propensão ESG: {rec[prop_col]}\n"
+                        f"• Nome: {rec['nome']}\n"
+                        f"• Idade: {rec['Idade']}\n"
+                        f"• Perfil de risco: {rec['PerfilRisco']}\n"
+                        f"• Propensão ESG: {rec['propensao_esg']}\n"
+                        f"**Carteira Simulada:**\n{port_str}\n"
                     )
-    
-            # c) monta mensagens e chama a API
+        
+            # 3) Monta e envia as mensagens
             messages = [SYSTEM_PROMPT]
             if client_context:
                 messages.append({"role": "system", "content": client_context})
             messages += st.session_state.mensagens
-    
+        
             openai.api_key = st.session_state.api_key
-            try:
-                response = openai.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=700
-                )
-                fabio_reply = response.choices[0].message.content
-            except Exception as e:
-                fabio_reply = f"Erro na chamada à API: {e}"
-    
-            # d) exibe e salva a resposta
+            resposta = openai.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=700
+            )
+            fabio_reply = resposta.choices[0].message.content
+        
+            # 4) Exibe e armazena a resposta
             st.chat_message("assistant").write(fabio_reply)
             st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
-    
-            # e) persiste histórico
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
     elif aba == "📦 Produtos ESG":
