@@ -125,7 +125,7 @@ if st.session_state.usuario:
     
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
     
-        # ——— Configuração da API ———
+        # ——— Configurar API Key ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
         with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
@@ -148,20 +148,23 @@ if st.session_state.usuario:
     
         df = st.session_state.df_clientes
     
-        # ——— Detecta automaticamente a coluna de ID ———
-        id_cols = [c for c in df.columns if "id" in c.lower()]
-        if id_cols:
-            id_col = id_cols[0]
-        else:
-            id_col = None
-            st.error("Não foi possível encontrar coluna de ID no CSV de clientes.")
+        # ——— Detecta automaticamente as colunas úteis ———
+        col_map = {
+            "id": next((c for c in df.columns if "id" in c.lower()), None),
+            "name": next((c for c in df.columns if "nome" in c.lower()), None),
+            "age": next((c for c in df.columns if "idade" in c.lower()), None),
+            "risk": next((c for c in df.columns if "perfil" in c.lower()), None),
+            "engagement": next((c for c in df.columns if "engajamento" in c.lower()), None),
+            "propension": next((c for c in df.columns if "propensao" in c.lower()), None),
+        }
+        missing = [k for k,v in col_map.items() if v is None]
+        if missing:
+            st.error(f"Colunas faltando na base de clientes: {', '.join(missing)}")
+            st.stop()
     
-        # ——— Renderiza histórico ———
+        # ——— Renderiza histórico de chat ———
         for msg in st.session_state.mensagens:
-            if msg["role"] == "user":
-                st.chat_message("user").write(msg["content"])
-            else:
-                st.chat_message("assistant").write(msg["content"])
+            st.chat_message(msg["role"]).write(msg["content"])
     
         # ——— Input fixo no rodapé ———
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
@@ -170,24 +173,23 @@ if st.session_state.usuario:
             # 1) Armazena pergunta
             st.session_state.mensagens.append({"role": "user", "content": user_input})
     
-            # 2) Tenta extrair contexto do cliente
+            # 2) Extrai contexto do cliente se mencionar “cliente <ID>”
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
-            if m and id_col:
+            if m:
                 cli_id = int(m.group(1))
-                if cli_id in df[id_col].values:
-                    rec = df.loc[df[id_col] == cli_id].iloc[0]
-                    # Ajuste os nomes abaixo conforme as colunas do seu CSV
+                if cli_id in df[col_map["id"]].values:
+                    rec = df.loc[df[col_map["id"]] == cli_id].iloc[0]
                     client_context = (
                         f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Nome: {rec.get('Nome', rec.get('nome', '—'))}\n"
-                        f"• Idade: {rec.get('Idade', rec.get('idade', '—'))}\n"
-                        f"• Perfil de risco: {rec.get('PerfilRisco', rec.get('perfil_risco', '—'))}\n"
-                        f"• Engajamento ESG: {rec.get('EngajamentoESG', rec.get('engajamento_esg', '—'))}\n"
-                        f"• Propensão ESG: {rec.get('PropensaoESG', rec.get('propensao_esg', '—'))}\n"
+                        f"• Nome: {rec[col_map['name']]}\n"
+                        f"• Idade: {rec[col_map['age']]}\n"
+                        f"• Perfil de risco: {rec[col_map['risk']]}\n"
+                        f"• Engajamento ESG: {rec[col_map['engagement']]}\n"
+                        f"• Propensão ESG: {rec[col_map['propension']]}\n"
                     )
     
-            # 3) System prompt
+            # 3) Define o System Prompt
             system_prompt = {
                 "role": "system",
                 "content": """
@@ -204,21 +206,21 @@ if st.session_state.usuario:
     • Fundos ESG (FIA, FIP, FIE, FIDC ESG, etc.)
     • Debêntures e COEs com propósito ESG
     • Certificados como CPR Verde, créditos de carbono, e ativos ambientais
-    • Critérios ESG usados pela XP (ex: frameworks SASB, ICVM 59, Taxonomia Verde)
-    • Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, CSA da S&P etc.)
+    • Critérios ESG usados pela XP (ex: SASB, ICVM 59, Taxonomia Verde)
+    • Alinhamento a padrões internacionais (ODS 2030, Selo B, CSA da S&P etc.)
     
     Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
     Quando não souber ou não puder afirmar algo com segurança, diga:
     "Para garantir precisão, recomendo consultar a área de produtos ou compliance da XP."
     
     🔍 FONTES E ATUALIZAÇÕES
-    Você pode acessar os sites oficiais da XP para buscar dados atualizados sobre produtos:
+    Você pode acessar os sites oficiais da XP para dados atualizados:
     https://conteudos.xpi.com.br/esg/
     https://www.xpi.com.br
     https://conteudos.xpi.com.br
     
     📂 BASES DISPONÍVEIS
-    Você possui acesso ao documento base5_clientes_esg10000.csv com dados de perfil dos clientes.
+    Você possui acesso à base de clientes em base5_clientes_esg10000.csv.
     
     🎯 ORIENTAÇÃO AO ASSESSOR
     Você atua exclusivamente com assessores da XP:
@@ -227,9 +229,9 @@ if st.session_state.usuario:
     - Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível.
     
     ⚠️ RESTRIÇÕES DE CONDUTA
-    - Não faz recomendações de suitability.
-    - Não interpreta normas legais, apenas menciona regulação pela ICVM 59 ou Taxonomia Verde.
-    - Em temas delicados, recomende consultar canais internos da XP.
+    - Sem recomendações regulatórias de suitability.
+    - Sem interpretação legal, apenas cite regulação ICVM 59 ou Taxonomia Verde.
+    - Em temas sensíveis, recomende canais internos da XP.
     """
             }
     
@@ -255,6 +257,9 @@ if st.session_state.usuario:
             # 5) Armazena resposta e persiste histórico
             st.session_state.mensagens.append({"role": "assistant", "content": resposta_fabio})
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+        
+        # ——— Fim do bloco: o loop acima exibirá tudo atualizado automaticamente ———
+
     
 
 
