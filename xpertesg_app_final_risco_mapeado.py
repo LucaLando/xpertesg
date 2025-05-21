@@ -126,7 +126,7 @@ if st.session_state.usuario:
     
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
     
-        # ——— Configuração da API ———
+        # ——— Configurar API Key ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
         with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
@@ -215,7 +215,7 @@ if st.session_state.usuario:
             # 2) Extrai contexto de cliente, se houver "cliente <ID>"
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
-            if m and id_col:
+            if m:
                 cli_id = int(m.group(1))
                 if cli_id in df[id_col].values:
                     rec = df.loc[df[id_col] == cli_id].iloc[0]
@@ -228,15 +228,15 @@ if st.session_state.usuario:
                         f"• Propensão ESG: {rec.get('propensao_esg', rec.get('PropensaoESG', '—'))}\n"
                     )
     
-            # 3) Monta lista de mensagens e chama a API
+            # 3) Monta lista de mensagens e chama a API usando a interface openai>=1.0.0
             full_messages = [SYSTEM_PROMPT]
             if client_context:
                 full_messages.append({"role": "system", "content": client_context})
             full_messages += st.session_state.mensagens
     
             try:
-                openai.api_key = st.session_state.api_key
-                resposta = openai.ChatCompletion.create(
+                client = openai.OpenAI(api_key=st.session_state.api_key)
+                resposta = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=full_messages,
                     temperature=0.7,
