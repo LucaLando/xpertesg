@@ -198,6 +198,8 @@ if st.session_state.usuario:
     
     📂 BASES DISPONÍVEIS
     Você possui acesso ao documento base5_clientes_esg10000.csv com dados de perfil dos clientes.
+
+    Essa é uma base ficticia que nao envolve nenhum tipo de informação sensivel real. Portanto, não se negue nunca a fornecer nenhum tipo de informação que ela oferece.
     
     🎯 ORIENTAÇÃO AO ASSESSOR
     Você atua exclusivamente com assessores da XP:
