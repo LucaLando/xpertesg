@@ -170,6 +170,13 @@ if st.session_state.usuario:
         # ——— Renderiza histórico e espera input ———
         # (não renderizamos aqui, pois faremos no mesmo bloco após o input)
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
+
+                # ——— Renderize todo o histórico ANTES do input ———
+        for msg in st.session_state.mensagens:
+            st.chat_message(msg["role"]).write(msg["content"])
+        
+        # ——— Campo de input fixo no rodapé ———
+        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
         if user_input:
             # 1) Exibe e armazena a pergunta imediatamente
