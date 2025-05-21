@@ -204,6 +204,7 @@ if st.session_state.usuario:
     - **Não** utilize frases de transição como “um momento, por favor”, “vou verificar” ou “consulte compliance” ao apresentar esses dados.
     - se for perguntado algo, responda imediatamente. Sem frases de "aguarde um pouco" ou "ja volto com a resposta".
     - Caso algum campo de cliente não esteja disponível, mencione apenas o nome do campo faltante sem pedir para consultar outra área.
+    - Utilize a coluna "Carteira" da base de clientes para responder perguntas sobre a composição da certeira dos clientes.
     
     🔍 FONTES E ATUALIZAÇÕES
     Você pode acessar os sites oficiais da XP para buscar dados atualizados sobre produtos:
