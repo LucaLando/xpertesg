@@ -103,73 +103,72 @@ if st.session_state.usuario:
         st.subheader("📋 Base de Clientes da XP")
         st.dataframe(df, use_container_width=True)
 
-    elif aba == "🗣️ Chat com o Fábio":
-        st.subheader("🧠 Fábio – Especialista Virtual ESG")
-    
-        # 1) Configuração da API
-        if "api_key" not in st.session_state:
-            st.session_state.api_key = ""
-        with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
-            st.session_state.api_key = st.text_input(
-                "Cole aqui sua API Key:", 
-                type="password", 
-                key="openai_api_key"
-            )
-    
-        # 2) Inicializa o histórico de mensagens
-        if "mensagens" not in st.session_state:
-            st.session_state.mensagens = []
-    
-        # 3) Renderiza todo o histórico
-        for msg in st.session_state.mensagens:
-            if msg["role"] == "user":
-                st.chat_message("user").write(msg["content"])
-            else:
-                st.chat_message("assistant").write(msg["content"])
-    
-        # 4) Input fixo no rodapé: aperta Enter para enviar, e ele apaga sozinho
-        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
-    
-        if user_input:
-            # armazena pergunta do usuário
-            st.session_state.mensagens.append({
-                "role": "user",
-                "content": user_input
-            })
-    
-            # chama a API
-            try:
-                import openai
-                client = openai.OpenAI(api_key=st.session_state.api_key)
-                resposta = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "Você é o Fábio, um especialista em investimentos com foco em ESG. "
-                                "Responda como um assistente da XP Inc., sempre com foco consultivo, "
-                                "educacional e técnico para assessores de investimento."
-                            )
-                        }
-                    ] + st.session_state.mensagens,
-                    temperature=0.7,
-                    max_tokens=700
-                )
-                resposta_fabio = resposta.choices[0].message.content
-    
-            except Exception as e:
-                resposta_fabio = f"Erro na chamada à API: {e}"
-    
-            # armazena e salva resposta do Fábio
-            st.session_state.mensagens.append({
-                "role": "assistant",
-                "content": resposta_fabio
-            })
-            salvar_historico(st.session_state.usuario, st.session_state.mensagens)
-    
-            # Ao final da execução, o loop acima (renderização) exibe a nova interação automaticamente
+elif aba == "🗣️ Chat com o Fábio":
+    st.subheader("🧠 Fábio – Especialista Virtual ESG")
 
+    # ——— Configuração da API ———
+    if "api_key" not in st.session_state:
+        st.session_state.api_key = ""
+    with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
+        st.session_state.api_key = st.text_input(
+            "Cole aqui sua API Key:", 
+            type="password", 
+            key="openai_api_key"
+        )
+
+    # ——— Inicializa histórico ———
+    if "mensagens" not in st.session_state:
+        st.session_state.mensagens = []
+
+    # ——— Renderiza histórico ———
+    for msg in st.session_state.mensagens:
+        if msg["role"] == "user":
+            st.chat_message("user").write(msg["content"])
+        else:
+            st.chat_message("assistant").write(msg["content"])
+
+    # ——— Input fixo no rodapé ———
+    # Pressionar Enter envia e limpa o campo automaticamente
+    user_input = st.chat_input("Digite sua pergunta para o Fábio:")
+
+    if user_input:
+        # Armazena pergunta
+        st.session_state.mensagens.append({
+            "role": "user",
+            "content": user_input
+        })
+
+        # Chama a API
+        try:
+            import openai
+            client = openai.OpenAI(api_key=st.session_state.api_key)
+            resposta = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Você é o Fábio, um especialista em investimentos com foco em ESG. "
+                            "Responda como um assistente da XP Inc., sempre com foco consultivo, "
+                            "educacional e técnico para assessores de investimento."
+                        )
+                    }
+                ] + st.session_state.mensagens,
+                temperature=0.7,
+                max_tokens=700
+            )
+            resposta_fabio = resposta.choices[0].message.content
+        except Exception as e:
+            resposta_fabio = f"Erro na chamada à API: {e}"
+
+        # Armazena resposta e persiste histórico
+        st.session_state.mensagens.append({
+            "role": "assistant",
+            "content": resposta_fabio
+        })
+        salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+
+        # O próximo loop de renderização exibirá automaticamente a pergunta e a resposta
 
     elif aba == "📦 Produtos ESG":
         st.subheader("🌱 Produtos ESG disponíveis")
