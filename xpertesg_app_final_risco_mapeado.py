@@ -121,7 +121,6 @@ if st.session_state.usuario:
 
     elif aba == "🗣️ Chat com o Fábio":
         import re
-        import pandas as pd
     
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
     
@@ -130,8 +129,8 @@ if st.session_state.usuario:
             st.session_state.api_key = ""
         with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
             st.session_state.api_key = st.text_input(
-                "Cole aqui sua API Key:", 
-                type="password", 
+                "Cole aqui sua API Key:",
+                type="password",
                 key="openai_api_key"
             )
     
@@ -139,57 +138,42 @@ if st.session_state.usuario:
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
     
-        # ——— Carrega base de clientes ESG ———
-        @st.cache_data
-        def load_clients(path="base5_clientes_esg10000.csv"):
-            return pd.read_csv(path)
-        if "df_clientes" not in st.session_state:
-            st.session_state.df_clientes = load_clients()
+        # ——— Prepara DataFrame de clientes (usa o df global já modificado) ———
+        # Garante uma coluna de ID sequencial
+        df_clientes = df.copy()
+        if "ID" not in df_clientes.columns:
+            df_clientes.insert(0, "ID", df_clientes.index + 1)
     
-        df = st.session_state.df_clientes
-    
-        # ——— Detecta automaticamente as colunas úteis ———
-        col_map = {
-            "id": next((c for c in df.columns if "id" in c.lower()), None),
-            "name": next((c for c in df.columns if "nome" in c.lower()), None),
-            "age": next((c for c in df.columns if "idade" in c.lower()), None),
-            "risk": next((c for c in df.columns if "perfil" in c.lower()), None),
-            "engagement": next((c for c in df.columns if "engajamento" in c.lower()), None),
-            "propension": next((c for c in df.columns if "propensao" in c.lower()), None),
-        }
-        missing = [k for k,v in col_map.items() if v is None]
-        if missing:
-            st.error(f"Colunas faltando na base de clientes: {', '.join(missing)}")
-            st.stop()
-    
-        # ——— Renderiza histórico de chat ———
+        # ——— Exibe histórico de chat ———
         for msg in st.session_state.mensagens:
             st.chat_message(msg["role"]).write(msg["content"])
     
-        # ——— Input fixo no rodapé ———
+        # ——— Campo de entrada fixo no rodapé (Enter envia e limpa) ———
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
         if user_input:
-            # 1) Armazena pergunta
-            st.session_state.mensagens.append({"role": "user", "content": user_input})
+            # 1) adiciona pergunta ao histórico
+            st.session_state.mensagens.append({
+                "role": "user",
+                "content": user_input
+            })
     
-            # 2) Extrai contexto do cliente se mencionar “cliente <ID>”
+            # 2) monta contexto de cliente se user_input mencionar "cliente <ID>"
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
             if m:
                 cli_id = int(m.group(1))
-                if cli_id in df[col_map["id"]].values:
-                    rec = df.loc[df[col_map["id"]] == cli_id].iloc[0]
+                if cli_id in df_clientes["ID"].values:
+                    rec = df_clientes.loc[df_clientes["ID"] == cli_id].iloc[0]
                     client_context = (
                         f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Nome: {rec[col_map['name']]}\n"
-                        f"• Idade: {rec[col_map['age']]}\n"
-                        f"• Perfil de risco: {rec[col_map['risk']]}\n"
-                        f"• Engajamento ESG: {rec[col_map['engagement']]}\n"
-                        f"• Propensão ESG: {rec[col_map['propension']]}\n"
+                        f"• Nome: {rec['nome']}\n"
+                        f"• Idade: {rec['Idade']}\n"
+                        f"• Perfil de risco: {rec['PerfilRisco']}\n"
+                        f"• Propensão ESG: {rec['propensao_esg']}\n"
                     )
     
-            # 3) Define o System Prompt
+            # 3) System Prompt completo
             system_prompt = {
                 "role": "system",
                 "content": """
@@ -229,13 +213,13 @@ if st.session_state.usuario:
     - Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível.
     
     ⚠️ RESTRIÇÕES DE CONDUTA
-    - Sem recomendações regulatórias de suitability.
+    - Sem recomendações de suitability.
     - Sem interpretação legal, apenas cite regulação ICVM 59 ou Taxonomia Verde.
     - Em temas sensíveis, recomende canais internos da XP.
     """
             }
     
-            # 4) Monta mensagens e chama a API
+            # 4) Agrupa todas as mensagens e chama a API
             full_messages = [system_prompt]
             if client_context:
                 full_messages.append({"role": "system", "content": client_context})
@@ -254,11 +238,12 @@ if st.session_state.usuario:
             except Exception as e:
                 resposta_fabio = f"Erro na chamada à API: {e}"
     
-            # 5) Armazena resposta e persiste histórico
-            st.session_state.mensagens.append({"role": "assistant", "content": resposta_fabio})
+            # 5) adiciona resposta ao histórico e salva
+            st.session_state.mensagens.append({
+                "role": "assistant",
+                "content": resposta_fabio
+            })
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
-        
-        # ——— Fim do bloco: o loop acima exibirá tudo atualizado automaticamente ———
 
     
 
