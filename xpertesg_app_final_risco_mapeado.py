@@ -152,7 +152,6 @@ if st.session_state.usuario:
         df_clients = st.session_state.df_clientes
     
         # ——— Define colunas fixas do dataset ———
-        id_col = "ID"
         age_col = "Idade"
         risk_col = "PerfilRisco"
         engagement_col = "EngajamentoESG"
