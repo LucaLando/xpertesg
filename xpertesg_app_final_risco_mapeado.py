@@ -146,6 +146,16 @@ if st.session_state.usuario:
         if "df_clientes" not in st.session_state:
             st.session_state.df_clientes = load_clients()
     
+        df = st.session_state.df_clientes
+    
+        # ——— Detecta automaticamente a coluna de ID ———
+        id_cols = [c for c in df.columns if "id" in c.lower()]
+        if id_cols:
+            id_col = id_cols[0]
+        else:
+            id_col = None
+            st.error("Não foi possível encontrar coluna de ID no CSV de clientes.")
+    
         # ——— Renderiza histórico ———
         for msg in st.session_state.mensagens:
             if msg["role"] == "user":
@@ -158,29 +168,26 @@ if st.session_state.usuario:
     
         if user_input:
             # 1) Armazena pergunta
-            st.session_state.mensagens.append({
-                "role": "user",
-                "content": user_input
-            })
+            st.session_state.mensagens.append({"role": "user", "content": user_input})
     
-            # 2) Extrai contexto do cliente, se mencionou “cliente <ID>”
+            # 2) Tenta extrair contexto do cliente
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
-            if m:
+            if m and id_col:
                 cli_id = int(m.group(1))
-                df = st.session_state.df_clientes
-                if cli_id in df["ID"].values:
-                    rec = df.loc[df["ID"] == cli_id].iloc[0]
+                if cli_id in df[id_col].values:
+                    rec = df.loc[df[id_col] == cli_id].iloc[0]
+                    # Ajuste os nomes abaixo conforme as colunas do seu CSV
                     client_context = (
                         f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Nome: {rec['Nome']}\n"
-                        f"• Idade: {rec['Idade']}\n"
-                        f"• Perfil de risco: {rec['PerfilRisco']}\n"
-                        f"• Engajamento ESG: {rec['EngajamentoESG']}\n"
-                        f"• Propensão ESG: {rec['PropensaoESG']}\n"
+                        f"• Nome: {rec.get('Nome', rec.get('nome', '—'))}\n"
+                        f"• Idade: {rec.get('Idade', rec.get('idade', '—'))}\n"
+                        f"• Perfil de risco: {rec.get('PerfilRisco', rec.get('perfil_risco', '—'))}\n"
+                        f"• Engajamento ESG: {rec.get('EngajamentoESG', rec.get('engajamento_esg', '—'))}\n"
+                        f"• Propensão ESG: {rec.get('PropensaoESG', rec.get('propensao_esg', '—'))}\n"
                     )
     
-            # 3) Monta mensagens para API, incluindo seu System Prompt
+            # 3) System prompt
             system_prompt = {
                 "role": "system",
                 "content": """
@@ -226,12 +233,12 @@ if st.session_state.usuario:
     """
             }
     
+            # 4) Monta mensagens e chama a API
             full_messages = [system_prompt]
             if client_context:
                 full_messages.append({"role": "system", "content": client_context})
             full_messages += st.session_state.mensagens
     
-            # 4) Chama a API do OpenAI
             try:
                 import openai
                 client = openai.OpenAI(api_key=st.session_state.api_key)
@@ -246,13 +253,8 @@ if st.session_state.usuario:
                 resposta_fabio = f"Erro na chamada à API: {e}"
     
             # 5) Armazena resposta e persiste histórico
-            st.session_state.mensagens.append({
-                "role": "assistant",
-                "content": resposta_fabio
-            })
+            st.session_state.mensagens.append({"role": "assistant", "content": resposta_fabio})
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
-        
-        # ——— O próximo loop exibirá tudo atualizado automaticamente ———
     
 
 
