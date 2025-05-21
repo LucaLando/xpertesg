@@ -120,6 +120,9 @@ if st.session_state.usuario:
         st.dataframe(df, use_container_width=True)
 
     elif aba == "🗣️ Chat com o Fábio":
+        import re
+        import pandas as pd
+    
         st.subheader("🧠 Fábio – Especialista Virtual ESG")
     
         # ——— Configuração da API ———
@@ -136,6 +139,13 @@ if st.session_state.usuario:
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
     
+        # ——— Carrega base de clientes ESG ———
+        @st.cache_data
+        def load_clients(path="base5_clientes_esg10000.csv"):
+            return pd.read_csv(path)
+        if "df_clientes" not in st.session_state:
+            st.session_state.df_clientes = load_clients()
+    
         # ——— Renderiza histórico ———
         for msg in st.session_state.mensagens:
             if msg["role"] == "user":
@@ -144,32 +154,90 @@ if st.session_state.usuario:
                 st.chat_message("assistant").write(msg["content"])
     
         # ——— Input fixo no rodapé ———
-        # Pressionar Enter envia e limpa o campo automaticamente
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
         if user_input:
-            # Armazena pergunta
+            # 1) Armazena pergunta
             st.session_state.mensagens.append({
                 "role": "user",
                 "content": user_input
             })
     
-            # Chama a API
+            # 2) Extrai contexto do cliente, se mencionou “cliente <ID>”
+            client_context = None
+            m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
+            if m:
+                cli_id = int(m.group(1))
+                df = st.session_state.df_clientes
+                if cli_id in df["ID"].values:
+                    rec = df.loc[df["ID"] == cli_id].iloc[0]
+                    client_context = (
+                        f"DADOS DO CLIENTE {cli_id}:\n"
+                        f"• Nome: {rec['Nome']}\n"
+                        f"• Idade: {rec['Idade']}\n"
+                        f"• Perfil de risco: {rec['PerfilRisco']}\n"
+                        f"• Engajamento ESG: {rec['EngajamentoESG']}\n"
+                        f"• Propensão ESG: {rec['PropensaoESG']}\n"
+                    )
+    
+            # 3) Monta mensagens para API, incluindo seu System Prompt
+            system_prompt = {
+                "role": "system",
+                "content": """
+    Você é o Fabio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado para assessores de investimentos da própria XP.
+    
+    Seu papel é fornecer orientação técnica, estratégica e educacional sobre a alocação de capital em produtos com perfil ESG, considerando sempre:
+    - A carteira de produtos ESG disponível na XP.
+    - O perfil de risco do cliente.
+    - O grau de propensão ESG do cliente (quando informado).
+    - As diretrizes regulatórias e reputacionais da XP Inc.
+    
+    🧠 CONHECIMENTO E COMPORTAMENTO
+    Você é especialista em:
+    • Fundos ESG (FIA, FIP, FIE, FIDC ESG, etc.)
+    • Debêntures e COEs com propósito ESG
+    • Certificados como CPR Verde, créditos de carbono, e ativos ambientais
+    • Critérios ESG usados pela XP (ex: frameworks SASB, ICVM 59, Taxonomia Verde)
+    • Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, CSA da S&P etc.)
+    
+    Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
+    Quando não souber ou não puder afirmar algo com segurança, diga:
+    "Para garantir precisão, recomendo consultar a área de produtos ou compliance da XP."
+    
+    🔍 FONTES E ATUALIZAÇÕES
+    Você pode acessar os sites oficiais da XP para buscar dados atualizados sobre produtos:
+    https://conteudos.xpi.com.br/esg/
+    https://www.xpi.com.br
+    https://conteudos.xpi.com.br
+    
+    📂 BASES DISPONÍVEIS
+    Você possui acesso ao documento base5_clientes_esg10000.csv com dados de perfil dos clientes.
+    
+    🎯 ORIENTAÇÃO AO ASSESSOR
+    Você atua exclusivamente com assessores da XP:
+    - Nunca fale diretamente com o cliente final.
+    - Sempre oriente com base em dados técnicos, não em preferências pessoais.
+    - Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível.
+    
+    ⚠️ RESTRIÇÕES DE CONDUTA
+    - Não faz recomendações de suitability.
+    - Não interpreta normas legais, apenas menciona regulação pela ICVM 59 ou Taxonomia Verde.
+    - Em temas delicados, recomende consultar canais internos da XP.
+    """
+            }
+    
+            full_messages = [system_prompt]
+            if client_context:
+                full_messages.append({"role": "system", "content": client_context})
+            full_messages += st.session_state.mensagens
+    
+            # 4) Chama a API do OpenAI
             try:
                 import openai
                 client = openai.OpenAI(api_key=st.session_state.api_key)
                 resposta = client.chat.completions.create(
                     model="gpt-3.5-turbo",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "Você é o Fábio, um especialista em investimentos com foco em ESG. "
-                                "Responda como um assistente da XP Inc., sempre com foco consultivo, "
-                                "educacional e técnico para assessores de investimento."
-                            )
-                        }
-                    ] + st.session_state.mensagens,
+                    messages=full_messages,
                     temperature=0.7,
                     max_tokens=700
                 )
@@ -177,14 +245,15 @@ if st.session_state.usuario:
             except Exception as e:
                 resposta_fabio = f"Erro na chamada à API: {e}"
     
-            # Armazena resposta e persiste histórico
+            # 5) Armazena resposta e persiste histórico
             st.session_state.mensagens.append({
                 "role": "assistant",
                 "content": resposta_fabio
             })
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+        
+        # ——— O próximo loop exibirá tudo atualizado automaticamente ———
     
-            # O próximo loop de renderização exibirá automaticamente a pergunta e a resposta
 
 
     elif aba == "📦 Produtos ESG":
