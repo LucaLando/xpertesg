@@ -126,38 +126,43 @@ if st.session_state.usuario:
     
         st.subheader("🧠 Fábio – Assistente Virtual ESG")
     
-        # ——— Configuração da API ———
+        # ——— 1) Chave da API ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
         with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
             st.session_state.api_key = st.text_input(
-                "Cole aqui sua API Key:",
-                type="password",
-                key="openai_api_key"
+                "Cole aqui sua API Key:", type="password", key="openai_api_key"
             )
     
-        # ——— Histórico de mensagens ———
+        # ——— 2) Histórico ———
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
     
-        # ——— Carrega e cacheia a base de clientes ESG ———
+        # ——— 3) Carrega base de clientes e cria coluna ID ———
         @st.cache_data
         def load_clients(path="base5_clientes_esg10000.csv"):
-            df = pd.read_csv(path)
-            df["ID"] = df.index + 1
-            return df
+            df_ = pd.read_csv(path)
+            df_["ID"] = df_.index + 1
+            return df_
     
-        if "df_clientes" not in st.session_state:
-            st.session_state.df_clientes = load_clients()
-        df_clients = st.session_state.df_clientes
+        if "df_clients" not in st.session_state:
+            st.session_state.df_clients = load_clients()
+        df_clients = st.session_state.df_clients
     
-        # ——— Define colunas fixas do dataset ———
-        age_col = "Idade"
-        risk_col = "PerfilRisco"
+        # ——— 4) Define colunas que existem no CSV ———
+        id_col         = "ID"
+        age_col        = "Idade"
+        risk_col       = "PerfilRisco"
         engagement_col = "EngajamentoESG"
-        propension_col = "propensao_esg"
+        prop_col       = "propensao_esg"
     
-        # ——— System Prompt do seu Expert ———
+        # Sanity check rápido
+        for c in (id_col, age_col, risk_col, engagement_col, prop_col):
+            if c not in df_clients.columns:
+                st.error(f"Coluna obrigatória não encontrada: {c}")
+                st.stop()
+    
+        # ——— 5) System Prompt do seu Expert (sem alterações) ———
         SYSTEM_PROMPT = {
             "role": "system",
             "content": '''Você é o Fabio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado para assessores de investimentos da própria XP.
@@ -194,9 +199,7 @@ if st.session_state.usuario:
     🔍 FONTES E ATUALIZAÇÕES
     Você pode acessar os sites oficiais da XP para buscar dados atualizados sobre produtos:
     
-    https://conteudos.xpi.com.br/esg/ 
-    
-    (Este acima é muito importante)
+    https://conteudos.xpi.com.br/esg/
     
     https://www.xpi.com.br
     
@@ -217,6 +220,13 @@ if st.session_state.usuario:
     Ao indicar produtos, faça cruzamento com a base de clientes sempre que possível:
     
     Exemplo: "Para o cliente João Silva, perfil conservador e alta propensão ESG, o fundo XP Sustentabilidade RF é mais indicado que COEs indexados a ações verdes."
+    
+    ⚠️ RESTRIÇÕES DE CONDUTA
+    Você não faz recomendações personalizadas de investimento sob a ótica de suitability regulatório.
+    
+    Você não interpreta normas legais — apenas menciona se um produto é regulado pela ICVM 59, pela CVM, ou elegível à Taxonomia Verde.
+    
+    Sempre que o tema for delicado (compliance, tributação, marketing), recomende consultar os canais internos da XP.
     
     🧩 SUGESTÕES TÉCNICAS PARA FUNCIONAMENTO AVANÇADO
     (instruções para você como desenvolvedor)
@@ -242,45 +252,45 @@ if st.session_state.usuario:
     Instruir o Expert a responder: “Esse produto não consta nas bases atuais. Consulte a plataforma oficial da XP para confirmar disponibilidade.”'''
         }
     
-        # ——— Renderiza todo o histórico antes do input ———
+        # ——— 6) Exibe todo o histórico antes do input ———
         for msg in st.session_state.mensagens:
             st.chat_message(msg["role"]).write(msg["content"])
     
-        # ——— Campo de input fixo no rodapé ———
+        # ——— 7) Campo de input fixo no rodapé ———
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
         if user_input:
-            # 1) Exibe e armazena imediatamente a pergunta
+            # a) exibe e armazena a pergunta
             st.chat_message("user").write(user_input)
             st.session_state.mensagens.append({"role": "user", "content": user_input})
     
-            # 2) Extrai contexto do cliente se houver "cliente <ID>"
+            # b) extrai contexto do cliente
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
             if m:
                 cli_id = int(m.group(1))
-                recs = df_clients[df_clients[id_col] == cli_id]
-                if not recs.empty:
-                    rec = recs.iloc[0]
+                rec = df_clients.loc[df_clients[id_col] == cli_id]
+                if not rec.empty:
+                    rec = rec.iloc[0]
                     client_context = (
                         f"DADOS DO CLIENTE {cli_id}:\n"
                         f"• Idade: {rec[age_col]}\n"
                         f"• Perfil de risco: {rec[risk_col]}\n"
                         f"• Engajamento ESG: {rec[engagement_col]}\n"
-                        f"• Propensão ESG: {rec[propension_col]}\n"
+                        f"• Propensão ESG: {rec[prop_col]}\n"
                     )
     
-            # 3) Monta lista de mensagens e chama a API
-            full_messages = [SYSTEM_PROMPT]
+            # c) monta mensagens e chama a API
+            messages = [SYSTEM_PROMPT]
             if client_context:
-                full_messages.append({"role": "system", "content": client_context})
-            full_messages += st.session_state.mensagens
+                messages.append({"role": "system", "content": client_context})
+            messages += st.session_state.mensagens
     
             openai.api_key = st.session_state.api_key
             try:
                 response = openai.chat.completions.create(
                     model="gpt-3.5-turbo",
-                    messages=full_messages,
+                    messages=messages,
                     temperature=0.7,
                     max_tokens=700
                 )
@@ -288,14 +298,12 @@ if st.session_state.usuario:
             except Exception as e:
                 fabio_reply = f"Erro na chamada à API: {e}"
     
-            # 4) Exibe e armazena a resposta
+            # d) exibe e salva a resposta
             st.chat_message("assistant").write(fabio_reply)
             st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
     
-            # 5) Persiste histórico
+            # e) persiste histórico
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
-
-
 
     elif aba == "📦 Produtos ESG":
         st.subheader("🌱 Produtos ESG disponíveis")
