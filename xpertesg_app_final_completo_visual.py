@@ -65,9 +65,14 @@ nomes_femininos = [
 ]
 
 import random
-from PIL import Image
-import requests
-XP_LOGO_URL = 'https://seeklogo.com/images/X/xp-inc-logo-79E1A5B73E-seeklogo.com.png'
+
+# --- Barra lateral ---
+with st.sidebar:
+    # Logo da XP Inc. diretamente por URL
+    st.image(XP_LOGO_URL, use_column_width=True)
+    st.markdown("---")
+    st.markdown("## Login do Assessor")
+    …
 
 
 def gerar_nome(genero):
