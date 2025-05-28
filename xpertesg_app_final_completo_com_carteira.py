@@ -121,13 +121,12 @@ usuario_input = st.sidebar.text_input("Digite seu nome de usuário")
 if st.sidebar.button("Entrar") and usuario_input:
     st.session_state.usuario = usuario_input
     st.session_state.mensagens = carregar_historico(usuario_input)
-    st.success(f"Bem-vindo, {usuario_input}!")
 
 if st.session_state.usuario:
-    st.title(f"XPertESG – Assessor: {st.session_state.usuario}")
+    st.title(f"{st.session_state.usuario}")
     aba = st.sidebar.radio(" Escolha uma seção:", [
         " Clientes",
-        " Chat com o Fábio",
+        " Chat com Fábio",
         " Produtos ESG",
         " Dashboards",
         " Recomendações",
@@ -136,10 +135,10 @@ if st.session_state.usuario:
     ])
 
     if aba == " Clientes":
-        st.subheader(" Base de Clientes da XP")
+        st.subheader(" Clientes")
         st.dataframe(df, use_container_width=True)
 
-    elif aba == " Chat com o Fábio":
+    elif aba == " Chat com Fábio":
         import re
         import pandas as pd
         import openai
@@ -243,7 +242,7 @@ if st.session_state.usuario:
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
     elif aba == " Produtos ESG":
-        st.subheader(" Produtos ESG disponíveis")
+        st.subheader(" Produtos ESG")
         produtos_esg = [
             {"nome": "Fundo XP Essencial ESG", "tipo": "Renda Fixa", "risco": "Baixo", "taxa": "0,9% a.a.", "arquivo": "lamina_xp_essencial.pdf"},
             {"nome": "ETF XP Sustentável", "tipo": "ETF", "risco": "Médio", "taxa": "0,3% a.a.", "arquivo": "lamina_xp_etf.pdf"},
@@ -484,7 +483,7 @@ if st.session_state.usuario:
         else:
             st.warning("Colunas necessárias não encontradas: 'categoria_produto' ou 'faixa_propensao'.")
         
-        st.markdown("###  Top 15 Clientes: Maior Capital e Maior Propensão ESG")
+        st.markdown("###  Maiores Oportunidades")
 
         if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
             # Calcular score baseado em capital * propensão
@@ -515,7 +514,7 @@ if st.session_state.usuario:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
     elif aba == " Recomendações":
-        st.subheader(" Recomendações por Faixa ESG")
+        st.subheader(" Recomendações personalizadas")
         for _, cliente in df.iterrows():
             if cliente["faixa_propensao"] == "Baixa":
                 acao = "Educar sobre ESG com conteúdo introdutório."
@@ -532,7 +531,7 @@ if st.session_state.usuario:
         cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
         cliente_info = df[df["nome"] == cliente_selecionado].iloc[0]
         perfil = cliente_info["PerfilRisco"]
-        st.markdown(f"**Perfil de Investidor XP:** {perfil}")
+        st.markdown(f"## Perfil de Investidor XP: **{perfil}**")
     
         # Definições de alocação padrão por perfil
         if perfil == "Conservador":
@@ -621,7 +620,7 @@ if st.session_state.usuario:
         })
     
         # Gráfico de linha: evolução individual
-        st.markdown("### 📈 Alocação Acumulada ao Longo do Tempo")
+        st.markdown("###  Alocação Acumulada ao Longo do Tempo")
         fig_crescimento = px.line(
             df_campanha,
             x="Data",
