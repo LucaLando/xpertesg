@@ -7,6 +7,19 @@ import os
 import json
 import plotly.graph_objects as go
 
+st.markdown(
+    """
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+      html, body, [class*="css"] {
+        font-family: 'Poppins', sans-serif;
+      }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
 ALTO_ESG = "#04C427"
