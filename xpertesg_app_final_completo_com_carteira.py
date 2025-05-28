@@ -116,7 +116,7 @@ def salvar_historico(usuario, mensagens):
 # Logo na barra lateral
 st.sidebar.image("XPert1.PNG", use_container_width=True)
 
-st.sidebar.markdown("## 👤 Login do Assessor")
+st.sidebar.markdown("##  Login do Assessor")
 usuario_input = st.sidebar.text_input("Digite seu nome de usuário")
 if st.sidebar.button("Entrar") and usuario_input:
     st.session_state.usuario = usuario_input
