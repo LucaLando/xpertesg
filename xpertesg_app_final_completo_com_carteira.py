@@ -114,7 +114,7 @@ def salvar_historico(usuario, mensagens):
         json.dump(mensagens, f, ensure_ascii=False, indent=2)
 
 # Logo na barra lateral
-st.sidebar.image("XPert1.PNG", use_column_width=True)
+st.sidebar.image("XPert1.PNG", use_container_width=True)
 
 st.sidebar.markdown("## 👤 Login do Assessor")
 usuario_input = st.sidebar.text_input("Digite seu nome de usuário")
