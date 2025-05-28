@@ -124,32 +124,32 @@ if st.sidebar.button("Entrar") and usuario_input:
     st.success(f"Bem-vindo, {usuario_input}!")
 
 if st.session_state.usuario:
-    st.title(f"📊 XPertESG – Assessor: {st.session_state.usuario}")
-    aba = st.sidebar.radio("📂 Escolha uma seção:", [
-        "👥 Clientes",
-        "🗣️ Chat com o Fábio",
-        "📦 Produtos ESG",
-        "📈 Dashboards",
-        "📌 Recomendações",
-        "💡 Alocação Inteligente",
-        "📢 Campanha"
+    st.title(f"XPertESG – Assessor: {st.session_state.usuario}")
+    aba = st.sidebar.radio(" Escolha uma seção:", [
+        " Clientes",
+        " Chat com o Fábio",
+        " Produtos ESG",
+        " Dashboards",
+        " Recomendações",
+        " Alocação Inteligente",
+        " Campanha"
     ])
 
-    if aba == "👥 Clientes":
-        st.subheader("📋 Base de Clientes da XP")
+    if aba == " Clientes":
+        st.subheader(" Base de Clientes da XP")
         st.dataframe(df, use_container_width=True)
 
-    elif aba == "🗣️ Chat com o Fábio":
+    elif aba == " Chat com o Fábio":
         import re
         import pandas as pd
         import openai
     
-        st.subheader("🧠 Fábio – Assistente Virtual ESG")
+        st.subheader(" Fábio – Assistente Virtual ESG")
     
         # ——— 1) Chave da API ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
-        with st.expander("🔐 Configurar Chave da API OpenAI", expanded=True):
+        with st.expander(" Configurar Chave da API OpenAI", expanded=True):
             st.session_state.api_key = st.text_input(
                 "Cole aqui sua API Key:", type="password", key="openai_api_key"
             )
@@ -242,8 +242,8 @@ if st.session_state.usuario:
             # e) persiste histórico
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
-    elif aba == "📦 Produtos ESG":
-        st.subheader("🌱 Produtos ESG disponíveis")
+    elif aba == " Produtos ESG":
+        st.subheader(" Produtos ESG disponíveis")
         produtos_esg = [
             {"nome": "Fundo XP Essencial ESG", "tipo": "Renda Fixa", "risco": "Baixo", "taxa": "0,9% a.a.", "arquivo": "lamina_xp_essencial.pdf"},
             {"nome": "ETF XP Sustentável", "tipo": "ETF", "risco": "Médio", "taxa": "0,3% a.a.", "arquivo": "lamina_xp_etf.pdf"},
@@ -283,9 +283,9 @@ if st.session_state.usuario:
                 st.markdown(f"**Risco:** {p['risco']}")
                 st.markdown(f"**Taxa de administração:** {p['taxa']}")
                 if "arquivo" in p:
-                    st.markdown(f"[📄 Acessar Lâmina do Produto](./{p['arquivo']})")
+                    st.markdown(f"[ Acessar Lâmina do Produto](./{p['arquivo']})")
                 elif "lamina" in p:
-                    st.markdown(f"[📄 Acessar Lâmina do Produto]({p['lamina']})")
+                    st.markdown(f"[ Acessar Lâmina do Produto]({p['lamina']})")
     
                 # Gráfico de rentabilidade acumulada e % retorno
                 if p["nome"] in df_rent.columns:
@@ -313,8 +313,8 @@ if st.session_state.usuario:
                 else:
                     st.info("Simulação de rentabilidade não disponível para este fundo.")
 
-    elif aba == "📈 Dashboards":
-        st.subheader("📊 Análise ESG da Base de Clientes")
+    elif aba == " Dashboards":
+        st.subheader(" Análise ESG da Base de Clientes")
 
         # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
         if "ValorAlocadoESG" not in df.columns:
@@ -327,7 +327,7 @@ if st.session_state.usuario:
     
     
             
-        st.markdown("### 🚀 Indicador de Alocação ESG")
+        st.markdown("###  Indicador de Alocação ESG")
 
         # Verificação das colunas no DataFrame
         if "ValorAlocadoESG" in df.columns and "ValorTotalCarteira" in df.columns:
@@ -402,19 +402,19 @@ if st.session_state.usuario:
 
         col3, col4, col5 = st.columns(3)
         with col3:
-            st.markdown("### 🔝 Top 5 - Baixa Propensão")
+            st.markdown("###  Top 5 - Baixa Propensão")
             st.dataframe(top_baixa[["nome", "propensao_esg", "PerfilRisco"]])
         with col4:
-            st.markdown("### 🔝 Top 5 - Média Propensão")
+            st.markdown("###  Top 5 - Média Propensão")
             st.dataframe(top_media[["nome", "propensao_esg", "PerfilRisco"]])
         with col5:
-            st.markdown("### 🔝 Top 5 - Alta Propensão")
+            st.markdown("###  Top 5 - Alta Propensão")
             st.dataframe(top_alta[["nome", "propensao_esg", "PerfilRisco"]])
        
     
         # NOVOS GRÁFICOS E INSIGHTS ESG
     
-        st.markdown("### ⏳ Clientes com ativos vencendo em até 30 dias")
+        st.markdown("###  Clientes com ativos vencendo em até 30 dias")
 
         if "vence_em_dias" in df.columns:
             vencendo_30 = df[df["vence_em_dias"] <= 30]
@@ -451,7 +451,7 @@ if st.session_state.usuario:
             st.warning("Coluna 'vence_em_dias' não encontrada na base.")
 
     
-        st.markdown("### 📦 Distribuição de Clientes por Categoria de Produto e Faixa ESG")
+        st.markdown("###  Distribuição de Clientes por Categoria de Produto e Faixa ESG")
     
         if "categoria_produto" in df.columns and "faixa_propensao" in df.columns:
             agrupado = df.groupby(["categoria_produto", "faixa_propensao"]).size().reset_index(name="Quantidade")
@@ -484,7 +484,7 @@ if st.session_state.usuario:
         else:
             st.warning("Colunas necessárias não encontradas: 'categoria_produto' ou 'faixa_propensao'.")
         
-        st.markdown("### 🌟 Top 15 Clientes: Maior Capital e Maior Propensão ESG")
+        st.markdown("###  Top 15 Clientes: Maior Capital e Maior Propensão ESG")
 
         if all(col in df.columns for col in ["propensao_esg", "ValorEmCaixa", "nome"]):
             # Calcular score baseado em capital * propensão
@@ -514,8 +514,8 @@ if st.session_state.usuario:
         else:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
-    elif aba == "📌 Recomendações":
-        st.subheader("📌 Recomendações por Faixa ESG")
+    elif aba == " Recomendações":
+        st.subheader(" Recomendações por Faixa ESG")
         for _, cliente in df.iterrows():
             if cliente["faixa_propensao"] == "Baixa":
                 acao = "Educar sobre ESG com conteúdo introdutório."
@@ -523,10 +523,10 @@ if st.session_state.usuario:
                 acao = "Apresentar produtos ESG e estimular interesse."
             else:
                 acao = "Alocar diretamente em produtos ESG recomendados."
-            st.info(f"👤 {cliente['nome']} ({cliente['PerfilRisco']}) → {acao}")
+            st.info(f" {cliente['nome']} ({cliente['PerfilRisco']}) → {acao}")
 
-    elif aba == "💡 Alocação Inteligente":
-        st.subheader("💡 Alocação Inteligente com ESG")
+    elif aba == " Alocação Inteligente":
+        st.subheader(" Alocação Inteligente com ESG")
     
         # Seleção de cliente da base
         cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
@@ -601,13 +601,13 @@ if st.session_state.usuario:
     
         # Tabela de substituições
         if substituicoes:
-            st.markdown("### 📌 Substituições Recomendadas")
+            st.markdown("###  Substituições Recomendadas")
             st.dataframe(pd.DataFrame(substituicoes))
         else:
             st.info("Nenhuma substituição ESG recomendada no momento.")
             
-    elif aba == "📢 Campanha":
-        st.subheader("📢 Campanha de Alocação ESG")
+    elif aba == " Campanha":
+        st.subheader(" Campanha de Alocação ESG")
     
         # Simular histórico de alocação do assessor e da média XP
         datas = pd.date_range(end=pd.Timestamp.today(), periods=12, freq='M')
@@ -636,7 +636,7 @@ if st.session_state.usuario:
         st.plotly_chart(fig_crescimento, use_container_width=True)
     
         # Gráfico comparativo: assessor vs XP
-        st.markdown("### ⚖️ Comparativo com Média da XP")
+        st.markdown("###  Comparativo com Média da XP")
         total_assessor = aloc_assessor[-1]
         total_xp = aloc_xp[-1]
     
@@ -654,10 +654,4 @@ if st.session_state.usuario:
         st.metric("Total Alocado pelo Assessor", f"R$ {total_assessor:,.0f}")
         st.metric("Média de Alocação XP", f"R$ {total_xp:,.0f}")
     
-        # Sugestões de gamificação futura
-        st.markdown("### 🕹️ Ideias para Futuras Gamificações")
-        st.markdown("- 🏆 **Ranking de Assessores por Alocação ESG**")
-        st.markdown("- 🎯 **Metas Mensais com Recompensas**")
-        st.markdown("- 🥇 **Badges como 'Top ESG' ou '100% Verde'**")
-        st.markdown("- 📅 **Missões Semanais para Diversificação**")
-        st.markdown("- 💰 **Simulação de Pontos ou Cashback Interno**")
+        
