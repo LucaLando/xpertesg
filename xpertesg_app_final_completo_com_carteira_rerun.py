@@ -14,6 +14,10 @@ st.set_page_config(page_title="XPertESG", layout="wide")
 # Supondo que você tenha 'Cabeçalho.png' na raiz do repo (ou ajuste o caminho)
 st.image("Cabeçalho.png", use_container_width=True)
 
+# 3) O resto do seu app...
+if "usuario" not in st.session_state:
+    st.session_state.usuario = ""
+
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
 ALTO_ESG = "#1b8e40"
