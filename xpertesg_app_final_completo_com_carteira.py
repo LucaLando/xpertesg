@@ -113,6 +113,53 @@ def salvar_historico(usuario, mensagens):
     with open(f"historico_{usuario}.json", "w", encoding="utf-8") as f:
         json.dump(mensagens, f, ensure_ascii=False, indent=2)
 
+import streamlit as st
+
+st.set_page_config(page_title="XPertESG", layout="wide")
+
+# Garante que a chave exista
+if "usuario" not in st.session_state:
+    st.session_state.usuario = ""
+
+if not st.session_state.usuario:
+    # cria duas colunas: esquerda = login, direita = branding
+    col1, col2 = st.columns([1, 2], gap="large")
+
+    with col1:
+        # logo customizada
+        st.image("XPert1.PNG", use_container_width=True)
+        st.markdown("## Login do Assessor")
+        usuario_input = st.text_input("Digite seu nome de usuário")
+        if st.button("Entrar") and usuario_input:
+            st.session_state.usuario = usuario_input
+            # força recarregar o script para aplicar o else
+            st.experimental_rerun()
+
+        # aqui você insere seus ícones ESG antes do texto
+        ic1, ic2, ic3 = st.columns(3)
+        ic1.image("icon_leaf.png", width=40)
+        ic2.image("icon_group.png", width=40)
+        ic3.image("icon_bank.png", width=40)
+
+        st.markdown(
+            """
+            Acreditamos que os investimentos também podem ser ferramentas que geram 
+            valor para a sociedade e para o meio ambiente, quando realizados de forma 
+            consciente e responsável. Queremos ampliar o conhecimento do mercado sobre 
+            a agenda ESG, e colocá-la no centro dos modelos de negócio e do processo de 
+            tomada de decisão.
+            """
+        )
+
+    with col2:
+        st.markdown("<h1 style='line-height:1.2'>SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE.</h1>", unsafe_allow_html=True)
+        # exemplo de gráfico simples de linhas verdes
+        st.markdown("### Em que futuro você quer investir?")
+
+    # interrompe a execução para que o resto do app não carregue
+    st.stop()
+
+
 # Logo na barra lateral
 st.sidebar.image("XPert1.PNG", use_container_width=True)
 
