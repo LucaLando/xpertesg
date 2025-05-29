@@ -12,7 +12,6 @@ st.set_page_config(page_title="XPertESG", layout="wide")
 
 # 2) CABEÇALHO
 # Supondo que você tenha 'Cabeçalho.png' na raiz do repo (ou ajuste o caminho)
-st.image("Cabeçalho.png", use_container_width=True)
 
 # 3) O resto do seu app...
 if "usuario" not in st.session_state:
@@ -171,6 +170,9 @@ if not st.session_state.usuario:
 
     # Interrompe aqui para que o restante do app só seja executado após login
     st.stop()
+
+# Cabeçalho exibido somente após login
+st.image("Cabeçalho.png", use_container_width=True)
     
 # Logo na barra lateral
 st.sidebar.image("XPert1.PNG", use_container_width=True)
@@ -695,5 +697,3 @@ if st.session_state.usuario:
         st.markdown("### 🧾 Estatísticas da Campanha")
         st.metric("Total Alocado pelo Assessor", f"R$ {total_assessor:,.0f}")
         st.metric("Média de Alocação XP", f"R$ {total_xp:,.0f}")
-    
-        
