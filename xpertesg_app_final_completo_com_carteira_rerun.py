@@ -395,15 +395,22 @@ if st.session_state.usuario:
             # Construção do gráfico tipo "velocímetro"
             fig_gauge = go.Figure(go.Indicator(
                 mode="gauge+number+delta",
-                value=percentual_esg,
-                delta={'reference': meta_percentual, 'increasing': {'color': ALTO_ESG}, 'decreasing': {'color': "red"}},
+                value=percentual_esg,  # ponteiro fica em 79.9
+                delta={
+                    'reference': meta_percentual,
+                    'increasing': {'color': ALTO_ESG},
+                    'decreasing': {'color': "red"}
+                },
                 gauge={
                     'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': BAIXO_ESG},
-                    'bar': {'color': ALTO_ESG, 'thickness': 0.3},
-                    'bgcolor': BAIXO_ESG,
+                    # Muda a cor da “barra” para branco (ou outra neutra):
+                    'bar': {'color': 'white', 'thickness': 0.3},
+                    'bgcolor': "#111111",
                     'steps': [
-                        {'range': [0, percentual_esg], 'color': ALTO_ESG},
-                        {'range': [percentual_esg, 100], 'color': BAIXO_ESG}
+                        # Até a meta (10%) em verde
+                        {'range': [0, meta_percentual],   'color': ALTO_ESG},
+                        # De 10% até 100% em azul
+                        {'range': [meta_percentual, 100], 'color': BAIXO_ESG},
                     ],
                     'threshold': {
                         'line': {'color': COR_XP, 'width': 10},
@@ -413,20 +420,16 @@ if st.session_state.usuario:
                 },
                 title={'text': "Proporção de Capital Alocado em ESG (%)"}
             ))
-
+            
             fig_gauge.update_layout(
                 height=400,
-                font=dict(size=16),
+                font=dict(size=16, color="white"),
                 paper_bgcolor="#111111",
                 plot_bgcolor="#111111",
-                font_color="white"
             )
-
+            
             st.plotly_chart(fig_gauge, use_container_width=True)
 
-        else:
-            st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
-    
     
     
     
