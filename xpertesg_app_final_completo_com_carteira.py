@@ -10,20 +10,30 @@ import plotly.graph_objects as go
 # 1) PAGE CONFIGURATIONS — SEMPRE em primeiro lugar
 st.set_page_config(page_title="XPertESG", layout="wide")
 
-# Injeção da fonte Poppins do Google Fonts
+# INJEÇÃO GLOBAL DA FONTE POPPINS
 st.markdown(
     """
     <!-- Importa Poppins do Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      /* Aplica Poppins a todos os elementos do Streamlit */
-      html, body, [class*="css"] {
+      * {
         font-family: 'Poppins', sans-serif !important;
       }
     </style>
-    """
-    ,
+    """,
     unsafe_allow_html=True,
+)
+
+# Teste visual
+st.markdown(
+    """<p style='font-size:20px;'>🚀 Se este texto estiver em Poppins, a injeção funcionou!</p>""",
+    unsafe_allow_html=True,
+)
+
+
+# Injeção da fonte Poppins do Google Fonts
+st.markdown(
+    """
 )
 
 
