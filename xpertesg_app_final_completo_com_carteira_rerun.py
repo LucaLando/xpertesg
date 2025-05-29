@@ -7,6 +7,12 @@ import os
 import json
 import plotly.graph_objects as go
 
+# 1) PAGE CONFIGURATIONS — SEMPRE em primeiro lugar
+st.set_page_config(page_title="XPertESG", layout="wide")
+
+# 2) CABEÇALHO
+# Supondo que você tenha 'Cabeçalho.png' na raiz do repo (ou ajuste o caminho)
+st.image("Cabeçalho.png", use_container_width=True)
 
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
