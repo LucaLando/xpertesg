@@ -160,31 +160,32 @@ if not st.session_state.usuario:
         # Espaçamento ou placeholder para elemento gráfico
         st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
 
-    # ----- aqui entra o CSS para footer fixo -----
-    # ----- CSS ajustado para footer fixo -----
-    st.markdown(
-        """
-        <style>
-          .footer-text {
-            position: fixed;
-            /* afasta menos da borda inferior e da direita */
-            bottom: 40px;   
-            right: 40px;    
-            /* aumenta o texto e define largura para forçar quebra */
-            font-size: 2rem;    
-            font-weight: 600;
-            color: #1b8e40;
-            max-width: 200px;       /* delimita o container para wrap */
-            line-height: 1.2;       /* controla espaçamento entre linhas */
-            z-index: 1000;
-          }
-        </style>
-        <div class="footer-text">
-          Em que futuro você<br>quer investir?
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    with col2:
+        # Slogan principal
+        st.markdown(
+            "<h1 style='line-height:1.2; margin-bottom: 1rem;'>"
+            "SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE."
+            "</h1>",
+            unsafe_allow_html=True
+        )
+        # Espaço extra para empurrar o texto para baixo
+        st.markdown("<div style='height:150px;'></div>", unsafe_allow_html=True)
+    
+        # Texto integrado, alinhado à direita, com quebra após 'você' e fonte maior
+        st.markdown(
+            """
+            <h3 style="
+                color: #1b8e40;
+                text-align: right;
+                font-size: 2rem;
+                line-height: 1.2;
+                margin-top: 0;
+            ">
+                Em que futuro você quer investir?
+            </h3>
+            """,
+            unsafe_allow_html=True
+        )
     # ----------------------------------------------
 
     # Interrompe aqui para que o restante do app só seja executado após login
