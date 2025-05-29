@@ -670,7 +670,7 @@ if st.session_state.usuario:
             labels={"Assessor": "Valor Acumulado (R$)"},
             line_shape="linear"
         )
-        fig_crescimento.update_traces(line=dict(color="#FFFF00", width=3))
+        fig_crescimento.update_traces(line=dict(color=ALTO_ESG, width=3))
     
         st.plotly_chart(fig_crescimento, use_container_width=True)
     
