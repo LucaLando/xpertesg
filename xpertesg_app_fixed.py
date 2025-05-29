@@ -199,7 +199,6 @@ if st.sidebar.button("Entrar") and usuario_input:
     st.session_state.mensagens = carregar_historico(usuario_input)
 
 if st.session_state.usuario:
-    st.title(f"{st.session_state.usuario}")
     aba = st.sidebar.radio(" Escolha uma seção:", [
         " Clientes",
         " Chat com Fábio",
