@@ -153,25 +153,23 @@ if not st.session_state.usuario:
     with col2:
         # Slogan principal
         st.markdown(
-            "<h1 style='line-height:1.2; margin-bottom: 1rem;'>"
+            "<h1 style='line-height:1.2; margin-bottom:1rem;'>"
             "SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE."
             "</h1>",
             unsafe_allow_html=True
         )
-        # Espaço extra para empurrar o texto para baixo
-        st.markdown("<div style='height:150px;'></div>", unsafe_allow_html=True)
     
-        # Texto integrado, alinhado à direita, com quebra após 'você' e fonte maior
+        # Espaço para dar altura ao container
+        st.markdown("<div style='height:200px;'></div>", unsafe_allow_html=True)
+    
+        # Texto “Em que futuro…” posicionado no canto inferior direito deste col2
         st.markdown(
             """
-            <div style="
-                width: 100vw;               /* ocupa toda a largura da página */
-                display: flex;              /* ativa o flexbox */
-                justify-content: right;  /* empurra o conteúdo ao máximo à direita */
-                margin-top: 150px;          /* ajuste vertical conforme desejar */
-                padding-right: 20px;        /* afasta um pouco da borda, se quiser */
-            ">
+            <div style="position: relative; width: 100%; height: 100px;">
               <h3 style="
+                  position: absolute;
+                  bottom: 0;
+                  right: 0;
                   color: #1b8e40;
                   font-size: 2rem;
                   line-height: 1.2;
@@ -183,6 +181,7 @@ if not st.session_state.usuario:
             """,
             unsafe_allow_html=True,
         )
+
     # ----------------------------------------------
 
     # Interrompe aqui para que o restante do app só seja executado após login
