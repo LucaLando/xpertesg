@@ -704,6 +704,7 @@ if st.session_state.usuario:
             y=[total_assessor, total_xp],
             labels={"x": "Origem", "y": "Valor Total Alocado"},
             color=["Assessor", "Média XP"],
+            color_discrete_sequence=[ALTO_ESG, BAIXO_ESG],
             title="Total Alocado no Ano"
         )
         st.plotly_chart(fig_barra, use_container_width=True)
