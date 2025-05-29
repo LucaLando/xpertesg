@@ -704,7 +704,7 @@ if st.session_state.usuario:
             y=[total_assessor, total_xp],
             labels={"x": "Origem", "y": "Valor Total Alocado"},
             color_discrete_map={
-                    "total_assesso": ALTO_ESG,
+                    "total_assessor": ALTO_ESG,
                     "Média XP": MEDIO_ESG
                     },
             title="Total Alocado no Ano"
