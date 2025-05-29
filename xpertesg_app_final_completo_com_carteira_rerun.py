@@ -10,9 +10,9 @@ import plotly.graph_objects as go
 
 st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
-ALTO_ESG = "#04C427"
-MEDIO_ESG = "#2BACB4"
-BAIXO_ESG = "#ADA9BD"
+ALTO_ESG = "#1b8e40"
+MEDIO_ESG = "#3e6049"
+BAIXO_ESG = "#e0e0e0"
 
 
 # Função para simular carteira de cada cliente
