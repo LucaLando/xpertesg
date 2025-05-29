@@ -393,46 +393,46 @@ if st.session_state.usuario:
             meta_percentual = 10  # você pode ajustar isso dinamicamente se quiser
 
             # Construção do gráfico tipo "velocímetro"
+            import plotly.graph_objects as go
+            
+            # Suas variáveis
+            percentual_esg   = ...  # valor real, ex: 79.9
+            meta_percentual  = 15   # meta fixa em 15%
+            
             fig_gauge = go.Figure(go.Indicator(
                 mode="gauge+number+delta",
-                value=percentual_esg,  # ponteiro fica em 79.9
+                value=percentual_esg,  
                 delta={
                     'reference': meta_percentual,
-                    'increasing': {'color': ALTO_ESG},
-                    'decreasing': {'color': "red"}
+                    'increasing': {'color': 'green'},
+                    'decreasing':  {'color': 'red'}
                 },
                 gauge={
-                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': BAIXO_ESG},
-                    # Muda a cor da “barra” para branco (ou outra neutra):
-                    'bar': {'color': 'white', 'thickness': 0.3},
-                    'bgcolor': "#111111",
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': 'white'},
+                    # a “barra” interna só mostra o contorno do ponteiro
+                    'bar':    {'color': 'white', 'thickness': 0.3},
+                    'bgcolor': '#111111',
                     'steps': [
-                        # Até a meta (10%) em verde
-                        {'range': [0, meta_percentual],   'color': ALTO_ESG},
-                        # De 10% até 100% em azul
-                        {'range': [meta_percentual, 100], 'color': BAIXO_ESG},
+                        {'range': [0, 10],             'color': 'green'},  # realizado
+                        {'range': [10, 100],           'color': 'blue'},   # ainda faltante
                     ],
                     'threshold': {
-                        'line': {'color': COR_XP, 'width': 10},
-                        'thickness': 1,
-                        'value': meta_percentual
+                        'line':      {'color': 'yellow', 'width': 6},
+                        'thickness': 0.75,
+                        'value':     meta_percentual
                     }
                 },
-                title={'text': "Proporção de Capital Alocado em ESG (%)"}
+                title={'text': "Proporção de Capital Alocado em ESG (%)", 'font': {'color': 'white'}}
             ))
             
             fig_gauge.update_layout(
                 height=400,
-                font=dict(size=16, color="white"),
-                paper_bgcolor="#111111",
-                plot_bgcolor="#111111",
+                font=dict(size=16, color='white'),
+                paper_bgcolor='#111111',
+                plot_bgcolor='#111111'
             )
             
             st.plotly_chart(fig_gauge, use_container_width=True)
-
-    
-    
-    
     
             
         _, col1, _ = st.columns(3)
