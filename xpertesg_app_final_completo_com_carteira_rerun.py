@@ -179,7 +179,6 @@ if st.session_state.usuario:
         " Chat com Fábio",
         " Produtos ESG",
         " Dashboard",
-        " Recomendações",
         " Alocação Inteligente",
         " Campanha"
     ])
@@ -558,17 +557,7 @@ if st.session_state.usuario:
         else:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
-    elif aba == " Recomendações":
-        st.subheader(" Recomendações personalizadas")
-        for _, cliente in df.iterrows():
-            if cliente["faixa_propensao"] == "Baixa":
-                acao = "Educar sobre ESG com conteúdo introdutório."
-            elif cliente["faixa_propensao"] == "Média":
-                acao = "Apresentar produtos ESG e estimular interesse."
-            else:
-                acao = "Alocar diretamente em produtos ESG recomendados."
-            st.info(f" {cliente['nome']} ({cliente['PerfilRisco']}) → {acao}")
-
+    
     elif aba == " Alocação Inteligente":
         st.subheader(" Alocação Inteligente com ESG")
     
