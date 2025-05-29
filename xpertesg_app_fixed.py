@@ -124,10 +124,6 @@ def salvar_historico(usuario, mensagens):
 
 # Configuração inicial da página
 
-# Inicializa sessão
-if "usuario" not in st.session_state:
-    st.session_state.usuario = ""
-
 # --- Página de Login (Splash Screen) ---
 if not st.session_state.usuario:
     # Duas colunas: esquerda (login + texto), direita (branding)
@@ -163,10 +159,28 @@ if not st.session_state.usuario:
         )
         # Espaçamento ou placeholder para elemento gráfico
         st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
-        st.markdown(
-    "<h3 style='color: #1b8e40; line-height:1.2; margin-bottom:0.5rem;'>Em que futuro você quer investir?</h3>",
-    unsafe_allow_html=True
-)
+
+    # ----- aqui entra o CSS para footer fixo -----
+    st.markdown(
+        """
+        <style>
+          .footer-text {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #1b8e40;
+            font-size: 1.25rem;
+            font-weight: 600;
+            z-index: 1000;
+          }
+        </style>
+        <div class="footer-text">
+          Em que futuro você quer investir?
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    # ----------------------------------------------
 
     # Interrompe aqui para que o restante do app só seja executado após login
     st.stop()
