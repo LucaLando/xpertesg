@@ -394,6 +394,12 @@ if st.session_state.usuario:
 
             # Construção do gráfico tipo "velocímetro"
             import plotly.graph_objects as go
+
+            st.write("percentual_esg =", percentual_esg, "   type =", type(percentual_esg))
+            st.write("meta_percentual  =", meta_percentual,  "   type =", type(meta_percentual))
+            
+            percentual_esg  = float(percentual_esg)
+            meta_percentual = float(meta_percentual)            
             
             # Suas variáveis
             percentual_esg   = ...  # valor real, ex: 79.9
