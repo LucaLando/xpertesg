@@ -209,7 +209,7 @@ if st.session_state.usuario:
     ])
 
     if aba == " Clientes":
-        st.subheader(" Clientes")
+        st.title(" Clientes")
         st.dataframe(df, use_container_width=True)
 
     elif aba == " Chat com Fábio":
@@ -217,7 +217,7 @@ if st.session_state.usuario:
         import pandas as pd
         import openai
     
-        st.subheader(" Fábio – Assistente Virtual ESG")
+        st.title(" Fábio – Assistente Virtual ESG")
     
         # ——— 1) Chave da API ———
         if "api_key" not in st.session_state:
@@ -316,7 +316,7 @@ if st.session_state.usuario:
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
     elif aba == " Produtos ESG":
-        st.subheader(" Produtos ESG")
+        st.title(" Produtos ESG")
         produtos_esg = [
             {"nome": "Fundo XP Essencial ESG", "tipo": "Renda Fixa", "risco": "Baixo", "taxa": "0,9% a.a.", "arquivo": "lamina_xp_essencial.pdf"},
             {"nome": "ETF XP Sustentável", "tipo": "ETF", "risco": "Médio", "taxa": "0,3% a.a.", "arquivo": "lamina_xp_etf.pdf"},
@@ -386,7 +386,7 @@ if st.session_state.usuario:
                     st.info("Simulação de rentabilidade não disponível para este fundo.")
 
     elif aba == " Dashboard":
-        st.subheader(" Análise ESG da Base de Clientes")
+        st.title(" Análise ESG da Base de Clientes")
 
         # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
         if "ValorAlocadoESG" not in df.columns:
@@ -584,7 +584,7 @@ if st.session_state.usuario:
     
     
     elif aba == " Alocação Inteligente":
-        st.subheader(" Alocação Inteligente com ESG")
+        st.title(" Alocação Inteligente com ESG")
     
         # Seleção de cliente da base
         cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
@@ -665,7 +665,7 @@ if st.session_state.usuario:
             st.info("Nenhuma substituição ESG recomendada no momento.")
             
     elif aba == " Campanha":
-        st.subheader(" Campanha de Alocação ESG")
+        st.title(" Campanha de Alocação ESG")
     
         # Simular histórico de alocação do assessor e da média XP
         datas = pd.date_range(end=pd.Timestamp.today(), periods=12, freq='M')
