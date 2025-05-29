@@ -7,12 +7,37 @@ import os
 import json
 import plotly.graph_objects as go
 
-
+# 1) PAGE CONFIGURATIONS — SEMPRE em primeiro lugar
 st.set_page_config(page_title="XPertESG", layout="wide")
+
+# Injeção da fonte Poppins do Google Fonts
+st.markdown(
+    """
+    <!-- Importa Poppins do Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Aplica Poppins a todos os elementos do Streamlit */
+      html, body, [class*="css"] {
+        font-family: 'Poppins', sans-serif !important;
+      }
+    </style>
+    """
+    ,
+    unsafe_allow_html=True,
+)
+
+
+# 2) CABEÇALHO
+# Supondo que você tenha 'Cabeçalho.png' na raiz do repo (ou ajuste o caminho)
+
+# 3) O resto do seu app...
+if "usuario" not in st.session_state:
+    st.session_state.usuario = ""
+
 COR_XP = "#FECB00"
-ALTO_ESG = "#04C427"
-MEDIO_ESG = "#2BACB4"
-BAIXO_ESG = "#ADA9BD"
+ALTO_ESG = "#1b8e40"
+MEDIO_ESG = "#3e6049"
+BAIXO_ESG = "#031d44"
 
 
 # Função para simular carteira de cada cliente
@@ -113,6 +138,74 @@ def salvar_historico(usuario, mensagens):
     with open(f"historico_{usuario}.json", "w", encoding="utf-8") as f:
         json.dump(mensagens, f, ensure_ascii=False, indent=2)
 
+
+# Configuração inicial da página
+
+# --- Página de Login (Splash Screen) ---
+if not st.session_state.usuario:
+    # Duas colunas: esquerda (login + texto), direita (branding)
+    col1, col2 = st.columns([1, 2], gap="large")
+
+    with col1:
+        # Logo principal
+        st.image("XPert1.PNG", use_container_width=True)
+        st.markdown("## Login do Assessor")
+
+        # Campo de entrada do usuário
+        usuario_input = st.text_input("Digite seu nome de usuário")
+        if st.button("Entrar") and usuario_input:
+            st.session_state.usuario = usuario_input
+            st.rerun()
+
+        # Texto de boas-vindas / missão ESG
+        st.markdown(
+            """
+            Acreditamos que os investimentos também podem ser ferramentas que geram valor para a sociedade e para o meio ambiente, quando
+            realizados de forma consciente e responsável. Queremos ampliar o conhecimento do mercado sobre a agenda ESG, e colocá-la no
+            centro dos modelos de negócio e do processo de tomada de decisão.
+            """
+        )
+
+
+    with col2:
+        # Slogan principal
+        st.markdown(
+            "<h1 style='line-height:1.2; margin-bottom:1rem;'>"
+            "SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE."
+            "</h1>",
+            unsafe_allow_html=True
+        )
+    
+        # Espaço para dar altura ao container
+        st.markdown("<div style='height:200px;'></div>", unsafe_allow_html=True)
+    
+        # Texto “Em que futuro…” posicionado no canto inferior direito deste col2
+        st.markdown(
+            """
+            <div style="position: relative; width: 100%; height: 100px;">
+              <h3 style="
+                  position: absolute;
+                  bottom: 0;
+                  right: 0;
+                  color: #1b8e40;
+                  font-size: 2rem;
+                  line-height: 1.2;
+                  margin: 0;
+              ">
+                Em que futuro você<br>quer investir?
+              </h3>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    # ----------------------------------------------
+
+    # Interrompe aqui para que o restante do app só seja executado após login
+    st.stop()
+
+# Cabeçalho exibido somente após login
+st.image("Cabeçalho.png", use_container_width=True)
+    
 # Logo na barra lateral
 st.sidebar.image("XPert1.PNG", use_container_width=True)
 
@@ -123,19 +216,17 @@ if st.sidebar.button("Entrar") and usuario_input:
     st.session_state.mensagens = carregar_historico(usuario_input)
 
 if st.session_state.usuario:
-    st.title(f"{st.session_state.usuario}")
     aba = st.sidebar.radio(" Escolha uma seção:", [
         " Clientes",
         " Chat com Fábio",
         " Produtos ESG",
-        " Dashboards",
-        " Recomendações",
+        " Dashboard",
         " Alocação Inteligente",
         " Campanha"
     ])
 
     if aba == " Clientes":
-        st.subheader(" Clientes")
+        st.title(" Clientes")
         st.dataframe(df, use_container_width=True)
 
     elif aba == " Chat com Fábio":
@@ -143,7 +234,7 @@ if st.session_state.usuario:
         import pandas as pd
         import openai
     
-        st.subheader(" Fábio – Assistente Virtual ESG")
+        st.title(" Fábio – Assistente Virtual ESG")
     
         # ——— 1) Chave da API ———
         if "api_key" not in st.session_state:
@@ -242,7 +333,7 @@ if st.session_state.usuario:
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
     elif aba == " Produtos ESG":
-        st.subheader(" Produtos ESG")
+        st.title(" Produtos ESG")
         produtos_esg = [
             {"nome": "Fundo XP Essencial ESG", "tipo": "Renda Fixa", "risco": "Baixo", "taxa": "0,9% a.a.", "arquivo": "lamina_xp_essencial.pdf"},
             {"nome": "ETF XP Sustentável", "tipo": "ETF", "risco": "Médio", "taxa": "0,3% a.a.", "arquivo": "lamina_xp_etf.pdf"},
@@ -289,12 +380,11 @@ if st.session_state.usuario:
                 # Gráfico de rentabilidade acumulada e % retorno
                 if p["nome"] in df_rent.columns:
                     df_plot = df_rent[["Data", p["nome"]]].copy()
-                    df_plot["% Retorno"] = (df_plot[p["nome"]] / df_plot[p["nome"]].iloc[0] - 1) * 100
-    
+                    
                     fig_rent = px.line(
                         df_plot,
                         x="Data",
-                        y=[p["nome"], "% Retorno"],
+                        y=[p["nome"]],
                         title="Simulação de Rentabilidade Acumulada",
                         labels={
                             "value": "Valor",
@@ -306,14 +396,14 @@ if st.session_state.usuario:
     
                     fig_rent.update_traces(line=dict(width=3))
                     fig_rent.for_each_trace(
-                        lambda t: t.update(line_color="#FFFB00") if t.name == p["nome"] else t.update(line_color="#888888", line_dash="dot")
+                        lambda t: t.update(line_color=ALTO_ESG) if t.name == p["nome"] else t.update(line_color="#888888", line_dash="dot")
                     )
                     st.plotly_chart(fig_rent, use_container_width=True)
                 else:
                     st.info("Simulação de rentabilidade não disponível para este fundo.")
 
-    elif aba == " Dashboards":
-        st.subheader(" Análise ESG da Base de Clientes")
+    elif aba == " Dashboard":
+        st.title(" Análise ESG da Base de Clientes")
 
         # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
         if "ValorAlocadoESG" not in df.columns:
@@ -377,10 +467,6 @@ if st.session_state.usuario:
 
         else:
             st.warning("Colunas 'ValorAlocadoESG' e/ou 'ValorTotalCarteira' não encontradas na base.")
-    
-    
-    
-    
     
             
         _, col1, _ = st.columns(3)
@@ -513,19 +599,9 @@ if st.session_state.usuario:
         else:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
-    elif aba == " Recomendações":
-        st.subheader(" Recomendações personalizadas")
-        for _, cliente in df.iterrows():
-            if cliente["faixa_propensao"] == "Baixa":
-                acao = "Educar sobre ESG com conteúdo introdutório."
-            elif cliente["faixa_propensao"] == "Média":
-                acao = "Apresentar produtos ESG e estimular interesse."
-            else:
-                acao = "Alocar diretamente em produtos ESG recomendados."
-            st.info(f" {cliente['nome']} ({cliente['PerfilRisco']}) → {acao}")
-
+    
     elif aba == " Alocação Inteligente":
-        st.subheader(" Alocação Inteligente com ESG")
+        st.title(" Alocação Inteligente com ESG")
     
         # Seleção de cliente da base
         cliente_selecionado = st.selectbox("Selecione um cliente:", df["nome"])
@@ -606,7 +682,7 @@ if st.session_state.usuario:
             st.info("Nenhuma substituição ESG recomendada no momento.")
             
     elif aba == " Campanha":
-        st.subheader(" Campanha de Alocação ESG")
+        st.title(" Campanha de Alocação ESG")
     
         # Simular histórico de alocação do assessor e da média XP
         datas = pd.date_range(end=pd.Timestamp.today(), periods=12, freq='M')
@@ -630,7 +706,7 @@ if st.session_state.usuario:
             labels={"Assessor": "Valor Acumulado (R$)"},
             line_shape="linear"
         )
-        fig_crescimento.update_traces(line=dict(color="#FFFF00", width=3))
+        fig_crescimento.update_traces(line=dict(color=ALTO_ESG, width=3))
     
         st.plotly_chart(fig_crescimento, use_container_width=True)
     
@@ -643,7 +719,10 @@ if st.session_state.usuario:
             x=["Assessor", "Média XP"],
             y=[total_assessor, total_xp],
             labels={"x": "Origem", "y": "Valor Total Alocado"},
-            color=["Assessor", "Média XP"],
+            color_discrete_map={
+                    "Assessor": ALTO_ESG,
+                    "Média XP": MEDIO_ESG
+                    },
             title="Total Alocado no Ano"
         )
         st.plotly_chart(fig_barra, use_container_width=True)
@@ -652,5 +731,3 @@ if st.session_state.usuario:
         st.markdown("### 🧾 Estatísticas da Campanha")
         st.metric("Total Alocado pelo Assessor", f"R$ {total_assessor:,.0f}")
         st.metric("Média de Alocação XP", f"R$ {total_xp:,.0f}")
-    
-        
