@@ -165,8 +165,9 @@ if not st.session_state.usuario:
         st.markdown(
             """
             <h3 style="
-                color: #1b8e40;
+                color: ALTO_ESG;
                 text-align: right;
+                margin-top: 150px;
                 font-size: 2rem;
                 line-height: 1.2;
                 margin-top: 0;
