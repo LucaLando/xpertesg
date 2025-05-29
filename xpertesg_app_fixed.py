@@ -149,16 +149,6 @@ if not st.session_state.usuario:
             """
         )
 
-    with col2:
-        # Slogan principal
-        st.markdown(
-            "<h1 style='line-height:1.2; margin-bottom: 0.5rem;'>" +
-            "SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE." +
-            "</h1>",
-            unsafe_allow_html=True
-        )
-        # Espaçamento ou placeholder para elemento gráfico
-        st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
 
     with col2:
         # Slogan principal
@@ -181,7 +171,7 @@ if not st.session_state.usuario:
                 line-height: 1.2;
                 margin-top: 0;
             ">
-                Em que futuro você quer investir?
+                Em que futuro você<br>quer investir?
             </h3>
             """,
             unsafe_allow_html=True
