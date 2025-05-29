@@ -12,7 +12,7 @@ st.set_page_config(page_title="XPertESG", layout="wide")
 COR_XP = "#FECB00"
 ALTO_ESG = "#1b8e40"
 MEDIO_ESG = "#3e6049"
-BAIXO_ESG = "#e0e0e0"
+BAIXO_ESG = "#031d44"
 
 
 # Função para simular carteira de cada cliente
