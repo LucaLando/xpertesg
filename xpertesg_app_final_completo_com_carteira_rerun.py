@@ -155,7 +155,10 @@ if not st.session_state.usuario:
         )
         # Espaçamento ou placeholder para elemento gráfico
         st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
-        st.markdown("### Em que futuro você quer investir?")
+        st.markdown(
+    "<h3 style='color: #1b8e40; line-height:1.2; margin-bottom:0.5rem;'>Em que futuro você quer investir?</h3>",
+    unsafe_allow_html=True
+)
 
     # Interrompe aqui para que o restante do app só seja executado após login
     st.stop()
