@@ -161,21 +161,26 @@ if not st.session_state.usuario:
         st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
 
     # ----- aqui entra o CSS para footer fixo -----
+    # ----- CSS ajustado para footer fixo -----
     st.markdown(
         """
         <style>
           .footer-text {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            color: #1b8e40;
-            font-size: 1.25rem;
+            /* afasta menos da borda inferior e da direita */
+            bottom: 40px;   
+            right: 40px;    
+            /* aumenta o texto e define largura para forçar quebra */
+            font-size: 2rem;    
             font-weight: 600;
+            color: #1b8e40;
+            max-width: 200px;       /* delimita o container para wrap */
+            line-height: 1.2;       /* controla espaçamento entre linhas */
             z-index: 1000;
           }
         </style>
         <div class="footer-text">
-          Em que futuro você quer investir?
+          Em que futuro você<br>quer investir?
         </div>
         """,
         unsafe_allow_html=True,
