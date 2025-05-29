@@ -356,7 +356,7 @@ if st.session_state.usuario:
     
                     fig_rent.update_traces(line=dict(width=3))
                     fig_rent.for_each_trace(
-                        lambda t: t.update(line_color="#FFFB00") if t.name == p["nome"] else t.update(line_color="#888888", line_dash="dot")
+                        lambda t: t.update(line_color="#ALTO_ESG") if t.name == p["nome"] else t.update(line_color="#888888", line_dash="dot")
                     )
                     st.plotly_chart(fig_rent, use_container_width=True)
                 else:
