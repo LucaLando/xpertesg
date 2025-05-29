@@ -164,18 +164,24 @@ if not st.session_state.usuario:
         # Texto integrado, alinhado à direita, com quebra após 'você' e fonte maior
         st.markdown(
             """
-            <h3 style="
-                color: ALTO_ESG;
-                text-align: right;
-                margin-top: 150px;
-                font-size: 2rem;
-                line-height: 1.2;
-                margin-top: 0;
+            <div style="
+                width: 100vw;               /* ocupa toda a largura da página */
+                display: flex;              /* ativa o flexbox */
+                justify-content: flex-end;  /* empurra o conteúdo ao máximo à direita */
+                margin-top: 150px;          /* ajuste vertical conforme desejar */
+                padding-right: 20px;        /* afasta um pouco da borda, se quiser */
             ">
+              <h3 style="
+                  color: #1b8e40;
+                  font-size: 2rem;
+                  line-height: 1.2;
+                  margin: 0;
+              ">
                 Em que futuro você<br>quer investir?
-            </h3>
+              </h3>
+            </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
     # ----------------------------------------------
 
