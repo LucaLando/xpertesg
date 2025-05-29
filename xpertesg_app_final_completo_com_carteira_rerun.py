@@ -178,7 +178,7 @@ if st.session_state.usuario:
         " Clientes",
         " Chat com Fábio",
         " Produtos ESG",
-        " Dashboards",
+        " Dashboard",
         " Recomendações",
         " Alocação Inteligente",
         " Campanha"
@@ -362,7 +362,7 @@ if st.session_state.usuario:
                 else:
                     st.info("Simulação de rentabilidade não disponível para este fundo.")
 
-    elif aba == " Dashboards":
+    elif aba == " Dashboard":
         st.subheader(" Análise ESG da Base de Clientes")
 
         # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
