@@ -167,7 +167,7 @@ if not st.session_state.usuario:
             <div style="
                 width: 100vw;               /* ocupa toda a largura da página */
                 display: flex;              /* ativa o flexbox */
-                justify-content: flex-end;  /* empurra o conteúdo ao máximo à direita */
+                justify-content: right;  /* empurra o conteúdo ao máximo à direita */
                 margin-top: 150px;          /* ajuste vertical conforme desejar */
                 padding-right: 20px;        /* afasta um pouco da borda, se quiser */
             ">
