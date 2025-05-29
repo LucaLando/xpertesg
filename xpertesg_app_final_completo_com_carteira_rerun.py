@@ -343,7 +343,7 @@ if st.session_state.usuario:
                     fig_rent = px.line(
                         df_plot,
                         x="Data",
-                        y=[p["nome"], "% Retorno"],
+                        y=[p["nome"]],
                         title="Simulação de Rentabilidade Acumulada",
                         labels={
                             "value": "Valor",
