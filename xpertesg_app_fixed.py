@@ -165,21 +165,25 @@ if not st.session_state.usuario:
         # Texto “Em que futuro…” posicionado no canto inferior direito deste col2
         st.markdown(
             """
-            <div style="position: relative; width: 100%; height: 100px;">
+            <div style="
+              position: fixed;
+              bottom: 40px;            /* distancia do rodapé */
+              left: 100vw;             /* posiciona o container na borda direita da viewport */
+              transform: translateX(-100%); /* puxa o bloco para a esquerda até sua própria largura */
+              z-index: 1000;
+            ">
               <h3 style="
-                  position: absolute;
-                  bottom: 0;
-                  right: 0;
-                  color: #1b8e40;
-                  font-size: 2rem;
-                  line-height: 1.2;
-                  margin: 0;
+                color: #1b8e40;
+                font-size: 2rem;
+                line-height: 1.2;
+                margin: 0;
+                text-align: left;      /* garante que o texto comece na borda do bloco */
               ">
                 Em que futuro você<br>quer investir?
               </h3>
             </div>
             """,
-            unsafe_allow_html=True,
+            unsafe_allow_html=True
         )
 
     # ----------------------------------------------
