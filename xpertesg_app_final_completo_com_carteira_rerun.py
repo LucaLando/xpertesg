@@ -339,8 +339,7 @@ if st.session_state.usuario:
                 # Gráfico de rentabilidade acumulada e % retorno
                 if p["nome"] in df_rent.columns:
                     df_plot = df_rent[["Data", p["nome"]]].copy()
-                    df_plot["% Retorno"] = (df_plot[p["nome"]] / df_plot[p["nome"]].iloc[0] - 1) * 100
-    
+                    
                     fig_rent = px.line(
                         df_plot,
                         x="Data",
