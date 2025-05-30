@@ -587,7 +587,7 @@ if st.session_state.usuario:
     df["nome"] = df["nome"].astype(str).str.strip()
     
     # ——— Sessão “Alocação Inteligente” ———
-    elif aba.strip() == "Alocação Inteligente":
+elif aba.strip() == "Alocação Inteligente":
         st.title("Alocação Inteligente com ESG")
     
         # Lista de clientes únicos e ordenados
