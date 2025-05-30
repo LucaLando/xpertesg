@@ -589,7 +589,7 @@ if st.session_state.usuario:
     elif aba == "Alocacao":
         st.title("Alocação Inteligente com ESG")
         
-        """# Lista de clientes únicos e ordenados
+        xxxxxxx= """# Lista de clientes únicos e ordenados
         nomes_clientes = sorted(df["nome"].unique())
         cliente_selecionado = st.selectbox("Selecione um cliente:", nomes_clientes)
         
@@ -668,8 +668,7 @@ if st.session_state.usuario:
             st.markdown("### Substituições Recomendadas")
             st.dataframe(pd.DataFrame(substituicoes))
         else:
-            st.info("Nenhuma substituição ESG recomendada no momento.")
-"""
+            st.info("Nenhuma substituição ESG recomendada no momento.")"""
                 
     elif aba == " Campanha":
         st.title(" Campanha de Alocação ESG")
