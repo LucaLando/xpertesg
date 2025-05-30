@@ -402,9 +402,9 @@ if st.session_state.usuario:
         st.markdown("###  Indicador de Alocação ESG")
 
         # Verificação das colunas no DataFrame
-        if "ValorAlocadoESG" in df.columns and "ValorTotalCarteira" in df.columns:
+        if "ValorAlocadoESG" in df.columns and "TicketMedioInvestido" in df.columns:
 
-            capital_total = df["ValorTotalCarteira"].sum()
+            capital_total = df["TicketMedioInvestido"].sum()
             capital_esg = df["ValorAlocadoESG"].sum()
 
             # Cálculo da proporção ESG (%)
