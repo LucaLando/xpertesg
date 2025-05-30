@@ -408,7 +408,7 @@ if st.session_state.usuario:
             capital_esg = df["ValorAlocadoESG"].sum()*1.81818181
 
             # Cálculo da proporção ESG (%)
-            if capital_total > 0:
+        if capital_total > 0:
                 percentual_esg = round((capital_esg / capital_total) * 100, 2)
             else:
                 percentual_esg = 0.0
@@ -587,7 +587,7 @@ if st.session_state.usuario:
     df["nome"] = df["nome"].astype(str).str.strip()
     
     # ——— Sessão “Alocação Inteligente” ———
-elif aba.strip() == "Alocação Inteligente":
+    elif aba.strip() == "Alocação Inteligente":
         st.title("Alocação Inteligente com ESG")
     
         # Lista de clientes únicos e ordenados
