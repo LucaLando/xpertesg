@@ -192,22 +192,18 @@ if not st.session_state.usuario:
         # Texto “Em que futuro…” posicionado no canto inferior direito deste col2
         st.markdown(
             """
-            <div style="position: relative; width: 100%; height: 100px;">
-              <h3 style='
-                  position: absolute;
-                  bottom: 0;
-                  right: 0;
-                  color: #1b8e40;
-                  font-size: 2rem;
-                  line-height: 1.2;
-                  margin: 0;
-              '>
-                Em que futuro você<br>quer investir?
-              </h3>
-            </div>
+            <h3 style=\"
+                color: #1b8e40;
+                font-size: 2rem;
+                line-height: 1.2;
+                margin: 0;
+            \"\">
+              Em que futuro você<br>quer investir?
+            </h3>
             """,
             unsafe_allow_html=True,
         )
+
     # ----------------------------------------------
 
     # Interrompe aqui para que o restante do app só seja executado após login
