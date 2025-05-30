@@ -584,39 +584,39 @@ if st.session_state.usuario:
     
         
         # ——— Antes do bloco da aba, garanta que os nomes estão limpos ———
-#df["nome"] = df["nome"].astype(str).str.strip()
+ df["nome"] = df["nome"].astype(str).str.strip()
     
     # ——— Sessão “Alocação Inteligente” ———
-if aba == "Alocação Inteligente":
-    st.title("Alocação Inteligente com ESG")
+    if aba == "Alocação Inteligente":
+      st.title("Alocação Inteligente com ESG")
 
     # Lista de clientes únicos e ordenados
-    nomes_clientes = sorted(df["nome"].unique())
-    cliente_selecionado = st.selectbox("Selecione um cliente:", nomes_clientes)
+      nomes_clientes = sorted(df["nome"].unique())
+      cliente_selecionado = st.selectbox("Selecione um cliente:", nomes_clientes)
 
     # Filtra corretamente o cliente escolhido
-    cliente_info = df.loc[df["nome"] == cliente_selecionado].iloc[0]
+      cliente_info = df.loc[df["nome"] == cliente_selecionado].iloc[0]
 
     # Ticket médio
-    ticket_medio = cliente_info["TicketMedioInvestido"]
+      ticket_medio = cliente_info["TicketMedioInvestido"]
 
     # Perfil padronizado
-    perfil_raw = cliente_info["PerfilRisco"]
-    perfil = str(perfil_raw).strip().title()
-    st.markdown(f"## Perfil de Investidor XP: **{perfil}**")
-    st.markdown(f"### Ticket Médio Investido: R$ {ticket_medio:,.2f}")
+      perfil_raw = cliente_info["PerfilRisco"]
+      perfil = str(perfil_raw).strip().title()
+      st.markdown(f"## Perfil de Investidor XP: **{perfil}**")
+      st.markdown(f"### Ticket Médio Investido: R$ {ticket_medio:,.2f}")
 
     # Alocação percentual por perfil
-    mapping_perfis_pct = {
+      mapping_perfis_pct = {
         "Conservador":    {"Renda Fixa": 0.50, "Multimercado": 0.30, "Caixa": 0.20},
         "Moderado":       {"Multimercado": 0.40, "Renda Fixa": 0.30, "ETF": 0.30},
         "Agressivo":      {"Renda Variável": 0.40, "ETF": 0.35, "Multimercado": 0.25}
     }
-    pct_carteira = mapping_perfis_pct.get(perfil, mapping_perfis_pct["Moderado"])
-    carteira_base = {cat: ticket_medio * pct for cat, pct in pct_carteira.items()}
+      pct_carteira = mapping_perfis_pct.get(perfil, mapping_perfis_pct["Moderado"])
+      carteira_base = {cat: ticket_medio * pct for cat, pct in pct_carteira.items()}
 
     # Produtos ESG disponíveis
-    produtos_esg = [
+      produtos_esg = [
         {"nome": "Fundo XP Essencial ESG", "categoria": "Renda Fixa",     "risco": 3},
         {"nome": "Pandhora ESG Prev",        "categoria": "Multimercado",  "risco": 7},
         {"nome": "ETF XP Sustentável",       "categoria": "ETF",           "risco": 10},
@@ -624,9 +624,9 @@ if aba == "Alocação Inteligente":
     ]
 
     # Construção da carteira recomendada
-    carteira_recomendada = []
-    substituicoes = []
-    for categoria, valor in carteira_base.items():
+      carteira_recomendada = []
+      substituicoes = []
+      for categoria, valor in carteira_base.items():
         if categoria.lower() == "caixa":
             carteira_recomendada.append({"Produto": categoria, "Valor": valor})
             continue
@@ -672,7 +672,7 @@ if aba == "Alocação Inteligente":
         st.info("Nenhuma substituição ESG recomendada no momento.")
 
                 
-elif aba == " Campanha":
+   elif aba == " Campanha":
     st.title(" Campanha de Alocação ESG")
 
     # Simular histórico de alocação do assessor e da média XP
