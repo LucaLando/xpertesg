@@ -126,23 +126,6 @@ def salvar_historico(usuario, mensagens):
 
 import base64
 
-# Função que define imagem de fundo para toda a tela
-def set_background(image_path):
-    with open(image_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode()
-    css_code = f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{encoded_string}");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: scroll;
-        background-position: center;
-    }}
-    </style>
-    """
-    st.markdown(css_code, unsafe_allow_html=True)
-
 # Se ainda não fez login, mostrar tela personalizada
 if 'usuario' not in st.session_state or not st.session_state.usuario:
     set_background("ImagemFundo.png")  # Adiciona fundo ANTES de construir tela
@@ -168,26 +151,37 @@ if 'usuario' not in st.session_state or not st.session_state.usuario:
     with col2:
         st.markdown(
             f"""
-            <div style="position: relative; width: 100%; height: 100%; padding: 2rem;
-                        background-image: url('ImagemFundo.png');
-                        background-size: cover;
-                        background-repeat: no-repeat;
-                        background-position: center;
-                        border-radius: 12px;">
-                <h1 style="color: white; font-size: 2.5rem; line-height: 1.2; margin-bottom: 2rem;">
-                    SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE.
-                </h1>
-                <div style="height: 200px;"></div>
-                <h3 style="position: absolute; bottom: 20px; right: 20px;
-                           color: #1b8e40; font-size: 1.8rem; line-height: 1.2; margin: 0;">
-                    Em que futuro você<br>quer investir?
-                </h3>
+            <div style="
+                position: relative;
+                width: 100%;
+                padding: 2rem;
+                background-image: url('ImagemFundo.png');
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+                border-radius: 12px;
+            ">
+                <div style="position: relative; z-index: 2;">
+                    <h1 style="color: white; font-size: 2.5rem; line-height: 1.2; margin-bottom: 2rem;">
+                        SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE.
+                    </h1>
+                    <div style="height: 200px;"></div>
+                    <h3 style="
+                        position: absolute;
+                        bottom: 20px;
+                        right: 20px;
+                        color: #1b8e40;
+                        font-size: 1.8rem;
+                        line-height: 1.2;
+                        margin: 0;
+                    ">
+                        Em que futuro você<br>quer investir?
+                    </h3>
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
-
-    st.stop()
 
 if st.session_state.usuario:
     aba = st.sidebar.radio(" Escolha uma seção:", [
