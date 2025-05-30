@@ -414,7 +414,7 @@ if st.session_state.usuario:
                 percentual_esg = 0.0
 
             # Meta futura (%)
-            meta_percentual = 10  # você pode ajustar isso dinamicamente se quiser
+            meta_percentual = 7  # você pode ajustar isso dinamicamente se quiser
 
             # Construção do gráfico tipo "velocímetro"
             fig_gauge = go.Figure(go.Indicator(
