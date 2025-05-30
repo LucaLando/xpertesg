@@ -584,7 +584,7 @@ if st.session_state.usuario:
     
         
         # ——— Antes do bloco da aba, garanta que os nomes estão limpos ———
-df["nome"] = df["nome"].astype(str).str.strip()
+#df["nome"] = df["nome"].astype(str).str.strip()
     
     # ——— Sessão “Alocação Inteligente” ———
 if aba == "Alocação Inteligente":
