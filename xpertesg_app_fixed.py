@@ -583,7 +583,7 @@ if st.session_state.usuario:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
     
-    elif aba == "Alocação Inteligente":
+    elif aba.strip() == "Alocação Inteligente":
         st.title("Alocação Inteligente com ESG")
     
         # Seleção de cliente da base
