@@ -204,7 +204,7 @@ if st.session_state.usuario:
         " Chat com Fábio",
         " Produtos ESG",
         " Dashboard",
-        " Alocação Inteligente",
+        " Alocacao",
         " Campanha"
     ])
 
@@ -586,7 +586,7 @@ if st.session_state.usuario:
         # ——— Antes do bloco da aba, garanta que os nomes estão limpos ———
     
     # ——— Sessão “Alocação Inteligente” ———
-    elif aba == "Alocação Inteligente":
+    elif aba == "Alocacao":
         st.title("Alocação Inteligente com ESG")
         
         """# Lista de clientes únicos e ordenados
