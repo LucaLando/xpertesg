@@ -124,23 +124,39 @@ def salvar_historico(usuario, mensagens):
 
 # Configuração inicial da página
 
-# --- Página de Login (Splash Screen) ---
-if not st.session_state.usuario:
+import base64
+
+# Função para setar imagem de fundo via CSS base64
+def set_background(image_path):
+    with open(image_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode()
+    css_code = f"""
+    <style>
+    .stApp {{
+        background-image: url('data:image/png;base64,{encoded_string}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    </style>
+    """
+    st.markdown(css_code, unsafe_allow_html=True)
+
+# Se ainda não fez login, mostrar tela personalizada
+if 'usuario' not in st.session_state or not st.session_state.usuario:
+    set_background("ImagemFundo.png")  # Adiciona fundo ANTES de construir tela
+
     # Duas colunas: esquerda (login + texto), direita (branding)
     col1, col2 = st.columns([1, 2], gap="large")
 
     with col1:
-        # Logo principal
         st.image("XPert2.PNG", use_container_width=True)
         st.markdown("## Login do Assessor")
-
-        # Campo de entrada do usuário
         usuario_input = st.text_input("Digite seu nome de usuário")
         if st.button("Entrar") and usuario_input:
             st.session_state.usuario = usuario_input
             st.rerun()
-
-        # Texto de boas-vindas / missão ESG
         st.markdown(
             """
             Acreditamos que os investimentos também podem ser ferramentas que geram valor para a sociedade e para o meio ambiente, quando
@@ -149,20 +165,14 @@ if not st.session_state.usuario:
             """
         )
 
-
     with col2:
-        # Slogan principal
         st.markdown(
             "<h1 style='line-height:1.2; margin-bottom:1rem;'>"
             "SÓ TRANSFORMA O FUTURO<br>QUEM INVESTE NO PRESENTE."
             "</h1>",
             unsafe_allow_html=True
         )
-    
-        # Espaço para dar altura ao container
         st.markdown("<div style='height:200px;'></div>", unsafe_allow_html=True)
-    
-        # Texto “Em que futuro…” posicionado no canto inferior direito deste col2
         st.markdown(
             """
             <div style="position: relative; width: 100%; height: 100px;">
@@ -181,41 +191,8 @@ if not st.session_state.usuario:
             """,
             unsafe_allow_html=True,
         )
-    # ----------------------------------------------
-
-    # Interrompe aqui para que o restante do app só seja executado após login
-    st.stop()
-
-# Cabeçalho exibido somente após login
-st.image("Cabeçalho.png", use_container_width=True)
     
-# Logo na barra lateral
-st.sidebar.image("XPert1.PNG", use_container_width=True)
-
-st.sidebar.markdown("##  Login do Assessor")
-import base64
-def set_background(image_path):
-    with open(image_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode()
-    css_code = f"""
-    <style>
-    .stApp {{
-        background-image: url('data:image/png;base64,{encoded_string}');
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }}
-    </style>
-    """
-    st.markdown(css_code, unsafe_allow_html=True)
-
-# Verifica se usuário ainda não logou
-if 'usuario' not in st.session_state or not st.session_state.usuario:
-    set_background("ImagemFundo.png")
-usuario_input = st.sidebar.text_input("Digite seu nome de usuário")
-if st.sidebar.button("Entrar") and usuario_input:
-    st.session_state.usuario = usuario_input
-    st.session_state.mensagens = carregar_historico(usuario_input)
+    st.stop()  # Interrompe execução até o login
 
 if st.session_state.usuario:
     aba = st.sidebar.radio(" Escolha uma seção:", [
