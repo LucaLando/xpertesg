@@ -193,7 +193,7 @@ if not st.session_state.usuario:
         st.markdown(
             """
             <div style="position: relative; width: 100%; height: 100px;">
-              <h3 style="
+              <h3 style='
                   position: absolute;
                   bottom: 0;
                   right: 0;
@@ -201,7 +201,7 @@ if not st.session_state.usuario:
                   font-size: 2rem;
                   line-height: 1.2;
                   margin: 0;
-              ">
+              '>
                 Em que futuro você<br>quer investir?
               </h3>
             </div>
