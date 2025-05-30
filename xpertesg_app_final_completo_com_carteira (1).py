@@ -134,20 +134,20 @@ def set_background(image_path):
 
     css_code = f"""
     <style>
-    body {{
-        background-image: url('data:image/png;base64,{encoded_string}');
+    .stApp {{
+        background: none;
+    }}
+    html, body {{
+        background-image: url("data:image/png;base64,{encoded_string}");
         background-size: cover;
         background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
-    }}
-
-    .stApp {{
-        background-color: rgba(0, 0, 0, 0); /* transparente */
+        background-position: top left;
+        background-attachment: scroll;  /* Faz a imagem rolar junto com a página */
     }}
     </style>
     """
     st.markdown(css_code, unsafe_allow_html=True)
+
 
 # Se ainda não fez login, mostrar tela personalizada
 if 'usuario' not in st.session_state or not st.session_state.usuario:
