@@ -390,7 +390,7 @@ if st.session_state.usuario:
 
         # 👇 Garantir que a coluna ValorAlocadoESG exista (ou simular se estiver ausente)
         if "ValorAlocadoESG" not in df.columns:
-            df["ValorAlocadoESG"] = np.random.uniform(5000, 80000, size=len(df)).round(2)
+            df["ValorAlocadoESG"] = np.random.uniform(50, 80000, size=len(df)).round(2)
     
         # 👇 Garantir que a coluna ValorTotalCarteira exista
         if "ValorTotalCarteira" not in df.columns:
