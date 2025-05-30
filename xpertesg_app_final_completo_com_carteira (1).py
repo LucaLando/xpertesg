@@ -128,16 +128,22 @@ import base64
 
 # Função para setar imagem de fundo via CSS base64
 def set_background(image_path):
+    import base64
     with open(image_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode()
+
     css_code = f"""
     <style>
-    .stApp {{
+    body {{
         background-image: url('data:image/png;base64,{encoded_string}');
         background-size: cover;
-        background-position: center;
         background-repeat: no-repeat;
         background-attachment: fixed;
+        background-position: center;
+    }}
+
+    .stApp {{
+        background-color: rgba(0, 0, 0, 0); /* transparente */
     }}
     </style>
     """
