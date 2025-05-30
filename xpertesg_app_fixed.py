@@ -672,53 +672,53 @@ if aba == "Alocação Inteligente":
             st.info("Nenhuma substituição ESG recomendada no momento.")
 
                 
-    elif aba == " Campanha":
-        st.title(" Campanha de Alocação ESG")
-    
-        # Simular histórico de alocação do assessor e da média XP
-        datas = pd.date_range(end=pd.Timestamp.today(), periods=12, freq='M')
-        aloc_assessor = np.cumsum(np.random.randint(10000, 50000, size=12))
-        aloc_xp = np.cumsum(np.random.randint(15000, 40000, size=12))
-    
-        df_campanha = pd.DataFrame({
-            "Data": datas,
-            "Assessor": aloc_assessor,
-            "Média XP": aloc_xp
-        })
-    
-        # Gráfico de linha: evolução individual
-        st.markdown("###  Alocação Acumulada ao Longo do Tempo")
-        fig_crescimento = px.line(
-            df_campanha,
-            x="Data",
-            y="Assessor",
-            title="Alocação ESG - Assessor",
-            markers=True,
-            labels={"Assessor": "Valor Acumulado (R$)"},
-            line_shape="linear"
-        )
-        fig_crescimento.update_traces(line=dict(color=ALTO_ESG, width=3))
-    
-        st.plotly_chart(fig_crescimento, use_container_width=True)
-    
-        # Gráfico comparativo: assessor vs XP
-        st.markdown("###  Comparativo com Média da XP")
-        total_assessor = aloc_assessor[-1]
-        total_xp = aloc_xp[-1]
-    
-        fig_barra = px.bar(
-            x=["Assessor", "Média XP"],
-            y=[total_assessor, total_xp],
-            labels={"x": "Origem", "y": "Valor Total Alocado"},
-            color_discrete_map={
-                    "Assessor": ALTO_ESG,
-                    "Média XP": MEDIO_ESG
-                    },
-            title="Total Alocado no Ano"
-        )
-        st.plotly_chart(fig_barra, use_container_width=True)
-    
-        # Estatísticas gerais
-        st.markdown("### 🧾 Estatísticas da Campanha")
-        st.metric("Total Alocado pelo Assessor", f"R$ {total_assessor:,.0f}")
-        st.metric("Média de Alocação XP", f"R$ {total_xp:,.0f}")
+elif aba == " Campanha":
+    st.title(" Campanha de Alocação ESG")
+
+    # Simular histórico de alocação do assessor e da média XP
+    datas = pd.date_range(end=pd.Timestamp.today(), periods=12, freq='M')
+    aloc_assessor = np.cumsum(np.random.randint(10000, 50000, size=12))
+    aloc_xp = np.cumsum(np.random.randint(15000, 40000, size=12))
+
+    df_campanha = pd.DataFrame({
+        "Data": datas,
+        "Assessor": aloc_assessor,
+        "Média XP": aloc_xp
+    })
+
+    # Gráfico de linha: evolução individual
+    st.markdown("###  Alocação Acumulada ao Longo do Tempo")
+    fig_crescimento = px.line(
+        df_campanha,
+        x="Data",
+        y="Assessor",
+        title="Alocação ESG - Assessor",
+        markers=True,
+        labels={"Assessor": "Valor Acumulado (R$)"},
+        line_shape="linear"
+    )
+    fig_crescimento.update_traces(line=dict(color=ALTO_ESG, width=3))
+
+    st.plotly_chart(fig_crescimento, use_container_width=True)
+
+    # Gráfico comparativo: assessor vs XP
+    st.markdown("###  Comparativo com Média da XP")
+    total_assessor = aloc_assessor[-1]
+    total_xp = aloc_xp[-1]
+
+    fig_barra = px.bar(
+        x=["Assessor", "Média XP"],
+        y=[total_assessor, total_xp],
+        labels={"x": "Origem", "y": "Valor Total Alocado"},
+        color_discrete_map={
+                "Assessor": ALTO_ESG,
+                "Média XP": MEDIO_ESG
+                },
+        title="Total Alocado no Ano"
+    )
+    st.plotly_chart(fig_barra, use_container_width=True)
+
+    # Estatísticas gerais
+    st.markdown("### 🧾 Estatísticas da Campanha")
+    st.metric("Total Alocado pelo Assessor", f"R$ {total_assessor:,.0f}")
+    st.metric("Média de Alocação XP", f"R$ {total_xp:,.0f}")
