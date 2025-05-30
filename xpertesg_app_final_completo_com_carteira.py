@@ -34,7 +34,7 @@ st.markdown(
 # Injeção da fonte Poppins do Google Fonts
 st.markdown(
     """
-)
+    )
 
 
 # 2) CABEÇALHO
