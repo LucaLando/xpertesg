@@ -405,7 +405,7 @@ if st.session_state.usuario:
         if "ValorAlocadoESG" in df.columns and "TicketMedioInvestido" in df.columns:
 
             capital_total = df["TicketMedioInvestido"].sum()
-            capital_esg = df["ValorAlocadoESG"].sum()
+            capital_esg = df["ValorAlocadoESG"].sum()*1.81818181
 
             # Cálculo da proporção ESG (%)
             if capital_total > 0:
