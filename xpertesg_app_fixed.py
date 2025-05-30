@@ -582,7 +582,7 @@ if st.session_state.usuario:
         else:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
-    
+    df["nome"] = df["nome"].astype(str).str.strip()
     elif aba.strip() == "Alocação Inteligente":
         st.title("Alocação Inteligente com ESG")
     
