@@ -38,7 +38,7 @@ def simulate_portfolios(df):
     df["Carteira"] = portfolios
     return df
 # Dados simulados
-df = pd.read_csv("base5_clientes_esg10000.csv")
+df = pd.read_csv("base6_clientes_esg.csv")
 
 # Mapear códigos de risco para nomes legíveis
 mapa_perfil = {0: "Conservador", 1: "Moderado", 2: "Agressivo"}
