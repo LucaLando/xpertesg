@@ -583,12 +583,6 @@ if st.session_state.usuario:
             st.warning("Colunas necessárias não encontradas: 'propensao_esg', 'ValorEmCaixa' ou 'nome'.")
     
     
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-
-# ————— Código anterior para carregar o DataFrame `df` e definir a variável `aba` —————
-
     elif aba == "Alocação Inteligente":
         st.title("Alocação Inteligente com ESG")
     
