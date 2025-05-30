@@ -586,7 +586,7 @@ if st.session_state.usuario:
         # ——— Antes do bloco da aba, garanta que os nomes estão limpos ———
     
     # ——— Sessão “Alocação Inteligente” ———
-    if aba == "Alocação Inteligente":
+    elif aba == "Alocação Inteligente":
       st.title("Alocação Inteligente com ESG")
 
     # Lista de clientes únicos e ordenados
