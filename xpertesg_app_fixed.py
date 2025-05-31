@@ -625,8 +625,8 @@ if st.session_state.usuario:
         # Construção da carteira recomendada
         carteira_recomendada = []
         substituicoes = []
-        for categoria, valor in carteira_base.items():
-        if categoria.lower() == "caixa":
+            for categoria, valor in carteira_base.items():
+                if categoria.lower() == "caixa":
             carteira_recomendada.append({"Produto": categoria, "Valor": valor})
             continue
         esg_produto = next(
