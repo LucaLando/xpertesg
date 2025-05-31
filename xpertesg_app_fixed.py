@@ -190,7 +190,7 @@ if not st.session_state.usuario:
 st.image("Cabeçalho.png", use_container_width=True)
     
 # Logo na barra lateral
-st.sidebar.image("XPert1.PNG", use_container_width=True)
+st.sidebar.image("XPert2.PNG", use_container_width=True)
 
 st.sidebar.markdown("##  Login do Assessor")
 usuario_input = st.sidebar.text_input("Digite seu nome de usuário")
