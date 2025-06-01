@@ -377,6 +377,8 @@ if st.session_state.usuario:
         - Manter threads fixos por assessor (usar `thread_id`).  
         - Logar interações (timestamp, ID do assessor, input e resposta).  
         - Fallback: “Produto não consta na base atual. Consulte a plataforma oficial da XP.”
+
+        Converta a propensao esg para um numero percentual com duas casas decimais
         
         """
         }
