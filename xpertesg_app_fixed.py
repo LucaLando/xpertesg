@@ -6,6 +6,7 @@ import openai
 import os
 import json
 import plotly.graph_objects as go
+import re
 
 # 1) PAGE CONFIGURATIONS — SEMPRE em primeiro lugar
 st.set_page_config(page_title="XPertESG", layout="wide")
@@ -255,6 +256,7 @@ if st.session_state.usuario:
         else:
             if "df_clients" not in st.session_state:
                 try:
+                    # Se você tiver o CSV no disco, mantenha o nome correto aqui:
                     st.session_state.df_clients = load_clients_from_buffer("base5_clientes_esg10000.csv")
                 except FileNotFoundError:
                     st.warning("Nenhum arquivo de clientes carregado e 'base5_clientes_esg10000.csv' não foi encontrado.")
@@ -284,25 +286,26 @@ if st.session_state.usuario:
                 st.error(f"Coluna obrigatória não encontrada: {c}")
                 st.stop()
     
-        # ——— 6) System Prompt do seu Expert (sem alterações) ———
+        # ——— 6) System Prompt do seu Expert ———
         SYSTEM_PROMPT = {
             "role": "system",
             "content": "Você é o Fábio, um assistente virtual especializado em produtos de investimento ESG da XP Inc.…"
         }
     
-        # ——— 7) Exibe todo o histórico antes do input ———
+        # ——— 7) Exibe o histórico antes do input ———
         for msg in st.session_state.mensagens:
             st.chat_message(msg["role"]).write(msg["content"])
     
-        # ——— 8) Captura o input do usuário antes de testar if user_input ———
+        # ——— 8) Campo de input do chat ———
         user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
+        # ——— 9) Somente se houver texto no input, processa a lógica abaixo ———
         if user_input:
             # a) exibe e armazena a pergunta
             st.chat_message("user").write(user_input)
             st.session_state.mensagens.append({"role": "user", "content": user_input})
     
-            # b) extrai contexto do cliente
+            # b) extrai contexto do cliente somente DENTRO deste bloco
             client_context = None
             m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
             if m:
@@ -318,7 +321,7 @@ if st.session_state.usuario:
                         f"• Propensão ESG: {rec[prop_col]}\n"
                     )
     
-            # c) monta mensagens e chama a API
+            # c) monta a lista de mensagens e faz a chamada à API
             messages = [SYSTEM_PROMPT]
             if client_context:
                 messages.append({"role": "system", "content": client_context})
@@ -340,7 +343,7 @@ if st.session_state.usuario:
             st.chat_message("assistant").write(fabio_reply)
             st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
     
-            # e) persiste histórico
+            # e) persiste histórico (sua função externa)
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
     elif aba == " Produtos ESG":
