@@ -212,7 +212,7 @@ if st.session_state.usuario:
         st.title(" Clientes")
         st.dataframe(df, use_container_width=True)
 
-        elif aba == " Chat com Fábio":
+    elif aba == " Chat com Fábio":
         st.title(" Fábio – Assistente Virtual ESG")
     
         # ——— NOVO: 1a) Carregamento dos arquivos ———
