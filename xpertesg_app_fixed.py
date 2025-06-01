@@ -212,12 +212,22 @@ if st.session_state.usuario:
         st.title(" Clientes")
         st.dataframe(df, use_container_width=True)
 
-    elif aba == " Chat com Fábio":
-        import re
-        import pandas as pd
-        import openai
-    
+        elif aba == " Chat com Fábio":
         st.title(" Fábio – Assistente Virtual ESG")
+    
+        # ——— NOVO: 1a) Carregamento dos arquivos ———
+        # (a) Upload da base de clientes
+        uploaded_clients = st.file_uploader(
+            "Faça upload da base de clientes (CSV)", 
+            type=["csv"],
+            help="Selecione o arquivo CSV contendo os dados de clientes ESG."
+        )
+        # (b) (Opcional) Upload de produtos ESG, se você quiser externalizar a lista
+        uploaded_products = st.file_uploader(
+            "Faça upload da lista de produtos ESG (opcional)", 
+            type=["csv", "json"], 
+            help="Se você tiver um CSV/JSON com os produtos ESG, faça o upload aqui."
+        )
     
         # ——— 1) Chave da API ———
         if "api_key" not in st.session_state:
@@ -231,18 +241,48 @@ if st.session_state.usuario:
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
     
-        # ——— 3) Carrega base de clientes e cria coluna ID ———
+        # ——— 3) Carrega base de clientes (ajustado para usar upload) ———
         @st.cache_data
-        def load_clients(path="base5_clientes_esg10000.csv"):
-            df_ = pd.read_csv(path)
+        def load_clients_from_buffer(buffer):
+            """
+            Recebe um buffer de upload (.csv) e retorna um DataFrame com coluna 'ID' adicional.
+            """
+            df_ = pd.read_csv(buffer)
             df_["ID"] = df_.index + 1
             return df_
     
-        if "df_clients" not in st.session_state:
-            st.session_state.df_clients = load_clients()
-        df_clients = st.session_state.df_clients
+        # Se o usuário fez upload, usamos o CSV dele; senão, tentamos carregar o padrão
+        if uploaded_clients is not None:
+            try:
+                df_clients = load_clients_from_buffer(uploaded_clients)
+            except Exception as e:
+                st.error(f"Erro ao ler arquivo de clientes: {e}")
+                st.stop()
+        else:
+            # Caso não tenha feito upload, tenta usar o CSV padrão (caso exista no disco)
+            if "df_clients" not in st.session_state:
+                try:
+                    st.session_state.df_clients = load_clients_from_buffer("base5_clientes_esg10000.csv")
+                except FileNotFoundError:
+                    st.warning("Nenhum arquivo de clientes carregado e 'base5_clientes_esg10000.csv' não foi encontrado.")
+                    st.stop()
+            df_clients = st.session_state.df_clients
     
-        # ——— 4) Define colunas que existem no CSV ———
+        # ——— 4) (Opcional) Carrega lista de produtos se vierem de arquivo externo ———
+        if uploaded_products is not None:
+            try:
+                # Exemplo: CSV com colunas nome, tipo, risco, taxa, arquivo/lamina
+                df_products_externo = pd.read_csv(uploaded_products)
+                # Converte para lista de dicionários, no mesmo formato esperado pelo seu código
+                produtos_esg = df_products_externo.to_dict(orient="records")
+            except Exception as e:
+                st.error(f"Erro ao ler arquivo de produtos ESG: {e}")
+                # Se der erro, cai de volta para a lista hardcoded abaixo
+                produtos_esg = None
+        else:
+            produtos_esg = None
+    
+        # ——— 5) Define colunas que existem no CSV ———
         id_col         = "ID"
         age_col        = "Idade"
         risk_col       = "PerfilRisco"
@@ -255,19 +295,15 @@ if st.session_state.usuario:
                 st.error(f"Coluna obrigatória não encontrada: {c}")
                 st.stop()
     
-        # ——— 5) System Prompt do seu Expert (sem alterações) ———
-            SYSTEM_PROMPT = {
-        
-  "role": "system",
-  "content": "Você é o Fábio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado exclusivamente para assessores de investimentos da própria XP.\n\nSeu papel é fornecer orientação técnica, estratégica e educacional sobre a alocação de capital em produtos disponíveis na XP, considerando sempre:\n- A carteira de produtos ESG da XP.\n- O perfil de risco do cliente.\n- O grau de propensão ESG do cliente (quando informado).\n- As diretrizes regulatórias e reputacionais da XP Inc.\n\n🧠 CONHECIMENTO E COMPORTAMENTO\nVocê é especialista em:\n• Fundos ESG (FIA, FIP, FIE, FIDC ESG, etc.)\n• Debêntures e COEs com propósito ESG\n• Certificados como CPR Verde, créditos de carbono, e ativos ambientais\n• Critérios ESG usados pela XP (ex: frameworks SASB, ICVM 59, Taxonomia Verde)\n• Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, CSA da S&P etc.)\n\nVocê se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.\n\n**Instruções de uso de contexto e estilo**\n- Ao receber dados do cliente (ID, nome, idade, perfil de risco, engajamento ESG, propensão ESG), use-os imediatamente na resposta.\n- Nunca use frases de transição (“um momento”, “vou verificar”) ou peça para consultar outra área.\n- Se faltar algum campo, mencione apenas o nome do campo ausente.\n- Utilize a coluna \"Carteira\" da base para responder sobre composição de portfólio.\n\n**Lógica de abordagem de venda**\n- **Clientes de alta propensão ESG**: destaque impacto e características ESG do produto.\n- **Clientes de baixa propensão ESG**: _não mencione o selo ESG nem a temática sustentável_. Em vez disso, apresente o produto como um fundo de investimento tradicional, focando em:\n  1. Rentabilidade histórica e expectativa futura.\n  2. Perfil de risco e volatilidade.\n  3. Liquidez e prazos.\n  4. Taxas de administração e performance.\n  5. Diversificação dentro da carteira.\n- Independente da propensão, seu objetivo é apoiar o assessor a vender o produto, usando argumentos financeiros e de performance.\n\n🔍 FONTES E ATUALIZAÇÕES\nVocê pode acessar os sites oficiais da XP para buscar dados atualizados:\nhttps://conteudos.xpi.com.br/esg/\nhttps://www.xpi.com.br\n\n📂 BASES DISPONÍVEIS\nVocê possui acesso ao arquivo `base5_clientes_esg10000.csv` (dados fictícios).\n\n🎯 ORIENTAÇÃO AO ASSESSOR\n- Nunca fale diretamente com o cliente final.\n- Oriente sempre com dados técnicos, não opiniões pessoais.\n- Cruze informações da base de clientes quando possível.\n\n🔧 SUGESTÕES TÉCNICAS PARA IMPLEMENTAÇÃO\n- Ativar Browser Tool (se disponível).\n- Atualizar base de clientes a cada rodada.\n- Manter threads fixos por assessor (thread_id).\n- Logar interações (timestamp, ID do assessor, input e resposta).\n- Fallback: “Produto não consta na base atual. Consulte a plataforma oficial da XP.”"
-}
+        # ——— 6) System Prompt do seu Expert (sem alterações) ———
+        SYSTEM_PROMPT = {
+            "role": "system",
+            "content": "Você é o Fábio, um assistente virtual especializado em produtos de investimento ESG da XP Inc.…"
+        }
     
-        # ——— 6) Exibe todo o histórico antes do input ———
+        # ——— 7) Exibe todo o histórico antes do input ———
         for msg in st.session_state.mensagens:
             st.chat_message(msg["role"]).write(msg["content"])
-    
-        # ——— 7) Campo de input fixo no rodapé ———
-        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
         if user_input:
             # a) exibe e armazena a pergunta
