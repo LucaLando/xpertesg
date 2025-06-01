@@ -215,14 +215,12 @@ if st.session_state.usuario:
     elif aba == " Chat com Fábio":
         st.title(" Fábio – Assistente Virtual ESG")
     
-        # ——— NOVO: 1a) Carregamento dos arquivos ———
-        # (a) Upload da base de clientes
+        # ——— 1a) Carregamento dos arquivos ———
         uploaded_clients = st.file_uploader(
             "Faça upload da base de clientes (CSV)", 
             type=["csv"],
             help="Selecione o arquivo CSV contendo os dados de clientes ESG."
         )
-        # (b) (Opcional) Upload de produtos ESG, se você quiser externalizar a lista
         uploaded_products = st.file_uploader(
             "Faça upload da lista de produtos ESG (opcional)", 
             type=["csv", "json"], 
@@ -244,14 +242,10 @@ if st.session_state.usuario:
         # ——— 3) Carrega base de clientes (ajustado para usar upload) ———
         @st.cache_data
         def load_clients_from_buffer(buffer):
-            """
-            Recebe um buffer de upload (.csv) e retorna um DataFrame com coluna 'ID' adicional.
-            """
             df_ = pd.read_csv(buffer)
             df_["ID"] = df_.index + 1
             return df_
     
-        # Se o usuário fez upload, usamos o CSV dele; senão, tentamos carregar o padrão
         if uploaded_clients is not None:
             try:
                 df_clients = load_clients_from_buffer(uploaded_clients)
@@ -259,7 +253,6 @@ if st.session_state.usuario:
                 st.error(f"Erro ao ler arquivo de clientes: {e}")
                 st.stop()
         else:
-            # Caso não tenha feito upload, tenta usar o CSV padrão (caso exista no disco)
             if "df_clients" not in st.session_state:
                 try:
                     st.session_state.df_clients = load_clients_from_buffer("base5_clientes_esg10000.csv")
@@ -271,13 +264,10 @@ if st.session_state.usuario:
         # ——— 4) (Opcional) Carrega lista de produtos se vierem de arquivo externo ———
         if uploaded_products is not None:
             try:
-                # Exemplo: CSV com colunas nome, tipo, risco, taxa, arquivo/lamina
                 df_products_externo = pd.read_csv(uploaded_products)
-                # Converte para lista de dicionários, no mesmo formato esperado pelo seu código
                 produtos_esg = df_products_externo.to_dict(orient="records")
             except Exception as e:
                 st.error(f"Erro ao ler arquivo de produtos ESG: {e}")
-                # Se der erro, cai de volta para a lista hardcoded abaixo
                 produtos_esg = None
         else:
             produtos_esg = None
@@ -289,7 +279,6 @@ if st.session_state.usuario:
         engagement_col = "EngajamentoESG"
         prop_col       = "propensao_esg"
     
-        # Sanity check rápido
         for c in (id_col, age_col, risk_col, engagement_col, prop_col):
             if c not in df_clients.columns:
                 st.error(f"Coluna obrigatória não encontrada: {c}")
@@ -304,6 +293,9 @@ if st.session_state.usuario:
         # ——— 7) Exibe todo o histórico antes do input ———
         for msg in st.session_state.mensagens:
             st.chat_message(msg["role"]).write(msg["content"])
+    
+        # ——— 8) Captura o input do usuário antes de testar if user_input ———
+        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
     
         if user_input:
             # a) exibe e armazena a pergunta
