@@ -253,7 +253,7 @@ if st.session_state.usuario:
 
         # ——— 5) Se o usuário escolheu “Conversa” — BLOCO COMPLETO DE ATENDIMENTO ———
         if subaba == "Conversa":
-            # ——— 5.1) Construção de df_clients apenas nesta sub-aba ———
+            # 5.1) Construção de df_clients apenas nesta sub-aba
             if uploaded_clients is None:
                 df_clients = df.copy()
             else:
@@ -263,42 +263,43 @@ if st.session_state.usuario:
                     st.error(f"Erro ao ler arquivo de clientes: {e}")
                     st.stop()
 
-                # Normaliza os nomes de coluna para minúsculo e sem espaços
+                # 5.1.1) Normaliza os nomes de coluna para minúsculo e sem espaços
                 df_raw.columns = df_raw.columns.str.strip().str.lower()
-                # (Opcional) Veja quais colunas foram detectadas:
+                # (Opcional) Exibe quais colunas o pandas enxergou:
                 st.write("Colunas detectadas no CSV de clientes:", list(df_raw.columns))
 
-                # Agora definimos os nomes “normalizados” que o código vai usar
-                id_col         = "id"              # se após lower() seu cabeçalho for “id”
-                age_col        = "idade"           # se no CSV vier “idade” (ou “Idade” → “idade”)
-                risk_col       = "perfilrisco"     # ex: “perfilrisco” (antes “PerfilRisco”)
-                engagement_col = "engajamentoesg"  # ex: “engajamentoesg” (antes “EngajamentoESG”)
-                prop_col       = "propensao_esg"   # ex: “propensao_esg” ou “propensão esg” → “propensao_esg”
-                carteira_col   = "carteira"        # ex: “carteira”
+                # 5.1.2) Definição das variáveis de coluna, em minúsculo conforme o CSV
+                # Ajuste aqui caso seu CSV tenha outro nome (ex: 'idcliente' em vez de 'id')
+                id_col         = "id"
+                age_col        = "idade"
+                risk_col       = "perfilrisco"
+                engagement_col = "engajamentoesg"
+                prop_col       = "propensao_esg"
+                carteira_col   = "carteira"
 
-                # Se existir “perfilrisco”, mapeamos valores numéricos para textos
+                # 5.1.3) Mapea 'perfilrisco' se vier numérico (opcional)
                 if risk_col in df_raw.columns:
                     df_raw[risk_col] = df_raw[risk_col].map(mapa_perfil).fillna(df_raw[risk_col])
 
-                # Gera a coluna “carteira” etc. via simulate_portfolios()
+                # 5.1.4) Gera a coluna 'Carteira' usando a função simulate_portfolios
                 df_clients = simulate_portfolios(df_raw)
 
-                # Se existe prop_col, criamos “faixa_propensao”
+                # 5.1.5) Caso exista 'propensao_esg', criamos 'faixa_propensao'
                 if prop_col in df_clients.columns:
                     df_clients["faixa_propensao"] = df_clients[prop_col].apply(classificar_faixa)
 
-                # Se não tiver “nome”, cria nomes fictícios
+                # 5.1.6) Se não tiver 'nome', geramos nomes fictícios
                 if "nome" not in df_clients.columns:
                     df_clients["nome"] = [
                         random.choice(nomes_masculinos + nomes_femininos)
                         for _ in range(len(df_clients))
                     ]
 
-                # Mapear novamente “perfilrisco” se for necessário
+                # 5.1.7) Mapea 'perfilrisco' novamente (caso seja numérico)    
                 if risk_col in df_clients.columns:
                     df_clients[risk_col] = df_clients[risk_col].map(mapa_perfil).fillna(df_clients[risk_col])
 
-            # ——— 5.2) Carrega lista de produtos ESG, se houver ———
+            # 5.2) Carrega lista de produtos ESG, se houver
             if uploaded_products is not None:
                 try:
                     if uploaded_products.name.lower().endswith(".csv"):
@@ -312,15 +313,15 @@ if st.session_state.usuario:
             else:
                 produtos_esg = None
 
-            # ——— 5.3) Verificação de colunas obrigatórias em df_clients ———
-            # (Neste ponto id_col, age_col etc. já existem)
+            # 5.3) Verificação de colunas obrigatórias em df_clients
+            # (Aqui as variáveis id_col, age_col etc. já foram definidas)
             obrigatorias = [id_col, age_col, risk_col, engagement_col, prop_col, carteira_col]
             for col_name in obrigatorias:
                 if col_name not in df_clients.columns:
                     st.error(f"Coluna obrigatória não encontrada no CSV: {col_name}")
                     st.stop()
 
-            # ——— 5.4) Prompt do sistema para Fábio ———
+            # 5.4) Prompt do sistema para Fábio
             SYSTEM_PROMPT = {
                 "role": "system",
                 "content": """
@@ -510,7 +511,6 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                   *Comparação de retornos ajustados ao risco entre carteiras ESG e não ESG em mercados emergentes.*  
                 """
             )
-
 
     elif aba == " Produtos ESG":
         st.title(" Produtos ESG")
