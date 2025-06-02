@@ -22,6 +22,7 @@ COR_XP = "#FECB00"
 ALTO_ESG = "#1b8e40"
 MEDIO_ESG = "#3e6049"
 BAIXO_ESG = "#031d44"
+PROD_ESG = "#0a762d"
 TRAD1 = "e0e0e0"
 TRAD2 = "031D44"
 TRAD3 = "04395E"
@@ -825,6 +826,15 @@ if st.session_state.usuario:
                 names="Produto",
                 values="Valor",
                 title="Carteira Recomendada com ESG"
+                 color="Produto",
+                color_discrete_map={
+                    "Renda Variável Tradicional": TRAD1,
+                    "ETF Tradicional": TRAD2,
+                    "Multimercado Tradicional": TRAD3,
+                    "Fundo XP Verde Ações": ALTO_ESG,
+                    "ETF XP Sustentável": MEDIO_ESG,
+                    "Pandhora ESG Prev": PROD_ESG
+                }
             )
             st.plotly_chart(fig2, use_container_width=True)
     
