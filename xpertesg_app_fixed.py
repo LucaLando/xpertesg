@@ -284,7 +284,6 @@ if st.session_state.usuario:
                     st.stop()
 
                 df_raw.columns = df_raw.columns.str.strip().str.lower()
-                st.write("Colunas detectadas no CSV de clientes:", list(df_raw.columns))
 
                 # 5.1.2) Se não existir “id” no CSV, criamos a partir do índice
                 if id_col not in df_raw.columns:
