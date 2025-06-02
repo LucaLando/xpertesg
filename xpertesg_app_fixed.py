@@ -218,8 +218,8 @@ if st.session_state.usuario:
 
     elif aba == " Chat com Fábio":
         st.title(" Fábio – Assistente Virtual ESG")
-    
-        # ——— 1a) Uploads opcionais ———
+
+        # ——— 1) Uploads opcionais (clientes e produtos) ———
         uploaded_clients = st.file_uploader(
             "Faça upload da base de clientes (CSV)",
             type=["csv"],
@@ -230,223 +230,305 @@ if st.session_state.usuario:
             type=["csv", "json"],
             help="Se você tiver um CSV/JSON com os produtos ESG, faça o upload aqui."
         )
-    
-        # ——— 1) Configuração da chave da API ———
+
+        # ——— 2) Configuração da chave da API ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
         with st.expander(" Configurar Chave da API OpenAI", expanded=True):
             st.session_state.api_key = st.text_input(
                 "Cole aqui sua API Key:", type="password", key="openai_api_key"
             )
-    
-        # ——— 2) Histórico de mensagens ———
+
+        # ——— 3) Histórico de mensagens (para “Conversa”) ———
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
-    
-        # ——— 3) Construção de df_clients já contendo a coluna 'Carteira' ———
-        # (a) Caso não tenha upload, usamos o DataFrame global 'df' que já passou por simulate_portfolios()
-        if uploaded_clients is None:
-            df_clients = df.copy()
-        else:
-            # (b) Se houve upload de CSV puro, carregamos, mapeamos e simulamos a carteira
-            try:
-                df_raw = pd.read_csv(uploaded_clients)
-            except Exception as e:
-                st.error(f"Erro ao ler arquivo de clientes: {e}")
-                st.stop()
-    
-            # Mapeia 'PerfilRisco' para texto, se numérico
-            if "PerfilRisco" in df_raw.columns:
-                df_raw["PerfilRisco"] = df_raw["PerfilRisco"].map(mapa_perfil).fillna(df_raw["PerfilRisco"])
-    
-            # Gera a carteira e demais campos usando simulate_portfolios()
-            df_clients = simulate_portfolios(df_raw)
-    
-            # Cria coluna 'faixa_propensao' caso exista 'propensao_esg'
-            if "propensao_esg" in df_clients.columns:
-                df_clients["faixa_propensao"] = df_clients["propensao_esg"].apply(classificar_faixa)
-    
-            # Se não houver coluna 'nome', gera nomes fictícios
-            if "nome" not in df_clients.columns:
-                df_clients["nome"] = [random.choice(nomes_masculinos + nomes_femininos) for _ in range(len(df_clients))]
-    
-            # Mapeia 'PerfilRisco' para texto, se necessário
-            if "PerfilRisco" in df_clients.columns:
-                df_clients["PerfilRisco"] = df_clients["PerfilRisco"].map(mapa_perfil).fillna(df_clients["PerfilRisco"])
-    
-        # ——— 4) Carrega lista de produtos ESG se enviado externamente ———
-        if uploaded_products is not None:
-            try:
-                if uploaded_products.name.lower().endswith(".csv"):
-                    df_products_externo = pd.read_csv(uploaded_products)
-                else:
-                    df_products_externo = pd.read_json(uploaded_products)
-                produtos_esg = df_products_externo.to_dict(orient="records")
-            except Exception as e:
-                st.error(f"Erro ao ler arquivo de produtos ESG: {e}")
+
+        # ——— 4) Exibe imediatamente a escolha de sub-aba ———
+        subaba = st.radio(
+            "Selecione a funcionalidade:",
+            ["Conversa", "Portal Informativo ESG"],
+            index=1,  # “Portal Informativo ESG” será mostrado por padrão
+            horizontal=True
+        )
+
+        # ——— 5) Se o usuário escolheu “Conversa” — BLOCO COMPLETO DE ATENDIMENTO ———
+        if subaba == "Conversa":
+            # 5.0) Definimos as variáveis de coluna OBRIGATÓRIAS independentemente de haver CSV
+            id_col         = "id"
+            age_col        = "idade"
+            risk_col       = "perfilrisco"
+            engagement_col = "engajamentoesg"
+            prop_col       = "propensao_esg"
+            carteira_col   = "carteira"
+
+            # 5.1) Construção de df_clients apenas nesta sub-aba
+            if uploaded_clients is None:
+                # Sem upload: assumimos que 'df' já veio preparado em outro ponto do app
+                df_clients = df.copy()
+                # Normaliza colunas do df global para minúsculo
+                df_clients.columns = df_clients.columns.str.strip().str.lower()
+                # Se não existir “id” no df global, cria usando o índice
+                if id_col not in df_clients.columns:
+                    df_clients[id_col] = df_clients.index
+                # Se não existir “carteira” no df global, criamos vazia
+                if carteira_col not in df_clients.columns:
+                    df_clients[carteira_col] = [""] * len(df_clients)
+                st.write("Colunas detectadas em df (global):", list(df_clients.columns))
+
+            else:
+                # 5.1.1) Lê o CSV de clientes e normaliza colunas para minúsculo
+                try:
+                    df_raw = pd.read_csv(uploaded_clients)
+                except Exception as e:
+                    st.error(f"Erro ao ler arquivo de clientes: {e}")
+                    st.stop()
+
+                df_raw.columns = df_raw.columns.str.strip().str.lower()
+                st.write("Colunas detectadas no CSV de clientes:", list(df_raw.columns))
+
+                # 5.1.2) Se não existir “id” no CSV, criamos a partir do índice
+                if id_col not in df_raw.columns:
+                    df_raw[id_col] = df_raw.index
+
+                # 5.1.3) Mapea 'perfilrisco' se vier numérico (caso exista essa coluna)
+                if risk_col in df_raw.columns:
+                    df_raw[risk_col] = df_raw[risk_col].map(mapa_perfil).fillna(df_raw[risk_col])
+
+                # 5.1.4) Gera a coluna 'carteira' usando a função simulate_portfolios
+                df_clients = simulate_portfolios(df_raw)
+
+                # 5.1.5) Se simulate_portfolios não criou "carteira", criamos vazia
+                if carteira_col not in df_clients.columns:
+                    df_clients[carteira_col] = [""] * len(df_clients)
+
+                # 5.1.6) Caso exista 'propensao_esg', criamos 'faixa_propensao'
+                if prop_col in df_clients.columns:
+                    df_clients["faixa_propensao"] = df_clients[prop_col].apply(classificar_faixa)
+
+                # 5.1.7) Se não tiver a coluna 'nome', geramos nomes fictícios
+                if "nome" not in df_clients.columns:
+                    df_clients["nome"] = [
+                        random.choice(nomes_masculinos + nomes_femininos)
+                        for _ in range(len(df_clients))
+                    ]
+
+                # 5.1.8) Mapea 'perfilrisco' novamente (caso seja numérico)    
+                if risk_col in df_clients.columns:
+                    df_clients[risk_col] = df_clients[risk_col].map(mapa_perfil).fillna(df_clients[risk_col])
+
+            # 5.2) Carrega lista de produtos ESG, caso haja upload
+            if uploaded_products is not None:
+                try:
+                    if uploaded_products.name.lower().endswith(".csv"):
+                        df_products_externo = pd.read_csv(uploaded_products)
+                    else:
+                        df_products_externo = pd.read_json(uploaded_products)
+                    produtos_esg = df_products_externo.to_dict(orient="records")
+                except Exception as e:
+                    st.error(f"Erro ao ler arquivo de produtos ESG: {e}")
+                    produtos_esg = None
+            else:
                 produtos_esg = None
-        else:
-            produtos_esg = None
-    
-        # ——— 5) Verificação de colunas obrigatórias em df_clients ———
-        id_col         = "ID"
-        age_col        = "Idade"
-        risk_col       = "PerfilRisco"
-        engagement_col = "EngajamentoESG"
-        prop_col       = "propensao_esg"
-        carteira_col   = "Carteira"
-    
-        for c in (id_col, age_col, risk_col, engagement_col, prop_col, carteira_col):
-            if c not in df_clients.columns:
-                st.error(f"Coluna obrigatória não encontrada no CSV: {c}")
-                st.stop()
-    
-        # ——— 6) Prompt do sistema (atualizado com faixas de propensão e macro) ———
-        SYSTEM_PROMPT = {
-            "role": "system",
-            "content": """
-    Você é o Fábio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado exclusivamente para assessores de investimentos da própria XP.
-    
-    Seu papel é fornecer orientação técnica, estratégica e educacional sobre a alocação de capital em produtos disponíveis na XP, considerando sempre:
-    - A carteira de produtos ESG da XP.
-    - O perfil de risco do cliente.
-    - O grau de propensão ESG do cliente (quando informado), categorizado assim:
-      • Propensão ESG baixa: até 0,40 (inclusive).
-      • Propensão ESG média: de 0,41 até 0,75 (inclusive).
-      • Propensão ESG alta: a partir de 0,76.
-    - As diretrizes regulatórias e reputacionais da XP Inc.
-    
-    🧠 CONHECIMENTO E COMPORTAMENTO
-    Você é especialista em:
-    • Fundos ESG (FIA, FIP, FIE, FIDC ESG etc.)
-    • Debêntures e COEs com propósito ESG
-    • Certificados como CPR Verde e créditos de carbono
-    • Ativos ambientais (Green Bonds, Marketplaces de Carbono)
-    • Critérios ESG usados pela XP (frameworks SASB, ICVM 59, Taxonomia Verde)
-    • Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, índices CSA da S&P, CDP etc.)
-    • Relação entre desempenho de fundos e contexto macroeconômico (SELIC, inflação, cenário político, taxas de juros)
-    
-    Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
-    
-    **Instruções de uso de contexto e estilo**
-    - Ao receber dados do cliente (ID, nome, idade, perfil de risco, engajamento ESG, propensão ESG, carteira), use-os imediatamente na resposta.
-    - Nunca use frases de transição (“um momento”, “vou verificar”) ou peça para consultar outra área.
-    - Se faltar algum campo, mencione apenas o nome do campo ausente.
-    - Utilize a coluna “Carteira” da base para responder sobre composição de portfólio.
-    - Em todas as comunicações, **SEM-PRE** destaque os retornos financeiros históricos e expectativas futuras dos fundos.
-    - Inclua análises comparativas entre o desempenho do fundo e indicadores macroeconômicos:  
-      • Exemplo: “Se um fundo rendeu 16% no último ano e a SELIC está em 14,75%, isso é considerado bom desempenho.”  
-      • Cite também inflação, prazos, volatilidade e outros fatores macro quando relevante.
-    
-    **Definição de estratégias de abordagem por faixa de propensão ESG**
-    1. **Propensão ESG baixa (até 0,40)**  
-       - Não enfatize a temática ESG ou selos verdes: apresente o produto como um fundo de investimento tradicional.  
-       - Foque em:  
-         1. Rentabilidade histórica e expectativa de retorno absoluto e relativo (CDI/SELIC).  
-         2. Perfil de risco, volatilidade e prazo.  
-         3. Liquidez e prazos de resgate.  
-         4. Taxas de administração e performance.  
-         5. Diversificação.  
-       - Exemplo de frase:  
-         “Este fundo rendeu 12% nos últimos 12 meses, superando o CDI de 9,5% no mesmo período, com volatilidade controlada em 6% ao ano.”
-    
-    2. **Propensão ESG média (0,41 a 0,75)**  
-       - Apresente ESG de forma equilibrada: mencione práticas de sustentabilidade, mas priorize retorno financeiro.  
-       - Destaque:  
-         1. Rating ESG ou menção breve a empresas responsáveis.  
-         2. Valor agregado no médio/longo prazo (menor risco reputacional).  
-         3. Performance comparada a benchmarks (CDI, IBOV).  
-       - Exemplo de frase:  
-         “Este fundo investe em empresas que atendem a padrões ESG reconhecidos, mas tenha em vista que o principal ponto é a performance: ele rendeu 14% no último ano, frente a 10% do CDI, com liquidez de D+1.”
-    
-    3. **Propensão ESG alta (acima de 0,76)**  
-       - Enriquecer a conversa com detalhes de impacto ESG:  
-         1. Critérios de seleção (SASB, ICVM 59, Taxonomia Verde).  
-         2. Selos ou certificações (Selo B, Índice ESG da S&P).  
-         3. Impacto social/ambiental (carbono, green bonds).  
-       - Ainda assim, mantenha o retorno financeiro como ponto central:  
-         1. “Apesar de forte viés ESG, entregou 13% no último ano, contra 11% do CDI.”  
-         2. Compare com SELIC e outros indicadores macroeconômicos:  
-            - “Com a SELIC em 14,75%, esse retorno líquido de 13% mostra competitividade, considerando taxa de 1% a.a.”  
-       - Exemplo de frase:  
-         “Este fundo investe em empresas com compromisso ESG de nível 1 ou 2, com Selo B, e entregou 15% nos últimos 12 meses, superando a SELIC de 14,75%.”
-    
-    🔍 **FONTES E ATUALIZAÇÕES**  
-    - Você pode acessar sites oficiais da XP para dados atualizados de cada fundo:  
-      • https://conteudos.xpi.com.br/esg/  
-      • https://www.xpi.com.br
-    
-    📂 **BASES DISPONÍVEIS**  
-    - Você possui acesso ao DataFrame `df_clients`, que já contém a coluna `Carteira` gerada por `simulate_portfolios()`.
-    
-    🎯 **ORIENTAÇÃO AO ASSESSOR**  
-    - Nunca fale diretamente com o cliente final; dirija-se ao assessor.  
-    - Oriente com dados técnicos, não opiniões pessoais.  
-    - Para cada faixa de propensão, ajuste o discurso conforme descrito, mas **sempre** apresente o retorno financeiro como principal argumento.
-    
-    🔧 **SUGESTÕES TÉCNICAS**  
-    - Ativar Browser Tool (se disponível).  
-    - Atualizar base de clientes a cada rodada.  
-    - Manter threads fixos por assessor (usar `thread_id`).  
-    - Logar interações (timestamp, ID do assessor, input e resposta).  
-    - Fallback: “Produto não consta na base atual. Consulte a plataforma oficial da XP.”
-    """
-        }
-    
-        # ——— 7) Exibe todo o histórico antes do input ———
-        for msg in st.session_state.mensagens:
-            st.chat_message(msg["role"]).write(msg["content"])
-    
-        # ——— 8) Captura o input do usuário ———
-        user_input = st.chat_input("Digite sua pergunta para o Fábio:")
-    
-        # ——— 9) Se o usuário digitou algo, processa ———
-        if user_input:
-            # a) Exibe e armazena a pergunta
-            st.chat_message("user").write(user_input)
-            st.session_state.mensagens.append({"role": "user", "content": user_input})
-    
-            # b) Extrai contexto do cliente, incluindo 'Carteira'
-            client_context = None
-            m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
-            if m:
-                cli_id = int(m.group(1))
-                rec = df_clients.loc[df_clients[id_col] == cli_id]
-                if not rec.empty:
-                    rec = rec.iloc[0]
-                    client_context = (
-                        f"DADOS DO CLIENTE {cli_id}:\n"
-                        f"• Idade: {rec[age_col]}\n"
-                        f"• Perfil de risco: {rec[risk_col]}\n"
-                        f"• Engajamento ESG: {rec[engagement_col]}\n"
-                        f"• Propensão ESG: {rec[prop_col]}\n"
-                        f"• Carteira: {rec[carteira_col]}\n"
+
+            # 5.3) Verificação de colunas obrigatórias em df_clients
+            obrigatorias = [id_col, age_col, risk_col, engagement_col, prop_col, carteira_col]
+            for col_name in obrigatorias:
+                if col_name not in df_clients.columns:
+                    st.error(f"Coluna obrigatória não encontrada no CSV: {col_name}")
+                    st.stop()
+
+            # 5.4) Prompt do sistema para Fábio
+            SYSTEM_PROMPT = {
+                "role": "system",
+                "content": """
+Você é o Fábio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado exclusivamente para assessores de investimentos da própria XP.
+
+Seu papel é fornecer orientação técnica, estratégica e educacional sobre a alocação de capital em produtos disponíveis na XP, considerando sempre:
+- A carteira de produtos ESG da XP.
+- O perfil de risco do cliente.
+- O grau de propensão ESG do cliente (quando informado), categorizado assim:
+  • Propensão ESG baixa: até 0,40 (inclusive).
+  • Propensão ESG média: de 0,41 até 0,75 (inclusive).
+  • Propensão ESG alta: a partir de 0,76.
+- As diretrizes regulatórias e reputacionais da XP Inc.
+
+🧠 CONHECIMENTO E COMPORTAMENTO
+Você é especialista em:
+• Fundos ESG (FIA, FIP, FIE, FIDC ESG etc.)
+• Debêntures e COEs com propósito ESG
+• Certificados como CPR Verde e créditos de carbono
+• Ativos ambientais (Green Bonds, Marketplaces de Carbono)
+• Critérios ESG usados pela XP (frameworks SASB, ICVM 59, Taxonomia Verde)
+• Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, índices CSA da S&P, CDP etc.)
+• Relaão entre desempenho de fundos e contexto macroeconômico (SELIC, inflação, cenário político, taxas de juros)
+
+Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
+
+**Instruções de uso de contexto e estilo**
+- Ao receber dados do cliente (ID, nome, idade, perfil de risco, engajamento ESG, propensão ESG, carteira), use-os imediatamente na resposta.
+- Nunca use frases de transição (“um momento”, “vou verificar”) ou peça para consultar outra área.
+- Se faltar algum campo, mencione apenas o nome do campo ausente.
+- Utilize a coluna “carteira” da base para responder sobre composição de portfólio.
+- Em todas as comunicações, **SEM-PRE** destaque os retornos financeiros históricos e expectativas futuras dos fundos.
+- Inclua análises comparativas entre o desempenho do fundo e indicadores macroeconômicos:  
+  • Exemplo: “Se um fundo rendeu 16% nos últimos 12 meses e a SELIC está em 14,75%, isso é considerado bom desempenho.”  
+  • Cite também inflação, prazos, volatilidade e outros fatores macro quando relevante.
+
+**Definião de estratégias de abordagem por faixa de propensão ESG**
+1. **Propensão ESG baixa (até 0,40)**  
+   - Não enfatize a temática ESG ou selos verdes: apresente o produto como um fundo de investimento tradicional.  
+   - Foque em:  
+     1. Rentabilidade histórica e expectativa de retorno absoluto e relativo (CDI/SELIC).  
+     2. Perfil de risco, volatilidade e prazo.  
+     3. Liquidez e prazos de resgate.  
+     4. Taxas de administração e performance.  
+     5. Diversificação.  
+   - Exemplo de frase:  
+     “Este fundo rendeu 12% nos últimos 12 meses, superando o CDI de 9,5% no mesmo período, com volatilidade controlada em 6% ao ano.”
+
+2. **Propensão ESG média (0,41 a 0,75)**  
+   - Apresente ESG de forma equilibrada: mencione práticas de sustentabilidade, mas priorize retorno financeiro.  
+   - Destaque:  
+     1. Rating ESG ou menção breve a empresas responsáveis.  
+     2. Valor agregado no médio/longo prazo (menor risco reputacional).  
+     3. Performance comparada a benchmarks (CDI, IBOV).  
+   - Exemplo de frase:  
+     “Este fundo investe em empresas que atendem a padrões ESG reconhecidos, mas tenha em vista que o principal ponto é a performance: ele rendeu 14% nos últimos 12 meses, frente a 10% do CDI, com liquidez de D+1.”
+
+3. **Propensão ESG alta (acima de 0,76)**  
+   - Enriquecer a conversa com detalhes de impacto ESG:  
+     1. Critérios de seleção (SASB, ICVM 59, Taxonomia Verde).  
+     2. Selos ou certificações (Selo B, Índice ESG da S&P).  
+     3. Impacto social/ambiental (carbono, green bonds).  
+   - Ainda assim, mantenha o retorno financeiro como ponto central:  
+     1. “Apesar de forte viés ESG, entregou 13% nos últimos 12 meses, contra 11% do CDI.”  
+     2. Compare com SELIC e outros indicadores macroeconômicos:  
+        - “Com a SELIC em 14,75%, esse retorno líquido de 13% mostra competitividade, considerando taxa de 1% a.a.”  
+   - Exemplo de frase:  
+     “Este fundo investe em empresas com compromisso ESG de nível 1 ou 2, com Selo B, e entregou 15% nos últimos 12 meses, superando a SELIC de 14,75%.”
+                
+   Converta a variavel propensao esg para um numero em porcentagem com duas casas decimais             
+                """
+            }
+
+            # 5.5) Exibe histórico de mensagens e campo de entrada
+            for msg in st.session_state.mensagens:
+                st.chat_message(msg["role"]).write(msg["content"])
+
+            user_input = st.chat_input("Digite sua pergunta para o Fábio:")
+
+            if user_input:
+                st.chat_message("user").write(user_input)
+                st.session_state.mensagens.append({"role": "user", "content": user_input})
+
+                # Extrai contexto (caso mencione “cliente X”)
+                client_context = None
+                m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
+                if m:
+                    cli_id = int(m.group(1))
+                    rec = df_clients.loc[df_clients[id_col] == cli_id]
+                    if not rec.empty:
+                        rec = rec.iloc[0]
+                        client_context = (
+                            f"DADOS DO CLIENTE {cli_id}:\n"
+                            f"• Idade: {rec[age_col]}\n"
+                            f"• Perfil de risco: {rec[risk_col]}\n"
+                            f"• Engajamento ESG: {rec[engagement_col]}\n"
+                            f"• Propensão ESG: {rec[prop_col]}\n"
+                            f"• Carteira: {rec[carteira_col]}\n"
+                        )
+
+                messages = [SYSTEM_PROMPT]
+                if client_context:
+                    messages.append({"role": "system", "content": client_context})
+                messages += st.session_state.mensagens
+
+                openai.api_key = st.session_state.api_key
+                try:
+                    response = openai.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=messages,
+                        temperature=0.7,
+                        max_tokens=700
                     )
-    
-            # c) Monta as mensagens e chama a API
-            messages = [SYSTEM_PROMPT]
-            if client_context:
-                messages.append({"role": "system", "content": client_context})
-            messages += st.session_state.mensagens
-    
-            openai.api_key = st.session_state.api_key
-            try:
-                response = openai.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=700
-                )
-                fabio_reply = response.choices[0].message.content
-            except Exception as e:
-                fabio_reply = f"Erro na chamada à API: {e}"
-    
-            # d) Exibe e salva a resposta
-            st.chat_message("assistant").write(fabio_reply)
-            st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
-    
-            # e) Persiste histórico
-            salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+                    fabio_reply = response.choices[0].message.content
+                except Exception as e:
+                    fabio_reply = f"Erro na chamada à API: {e}"
+
+                st.chat_message("assistant").write(fabio_reply)
+                st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
+                salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+
+        # ——— 6) Se o usuário escolheu “Portal Informativo ESG” — CHAMA APENAS A API ———
+        elif subaba == "Portal Informativo ESG":
+            st.header("Portal Informativo: ESG e Comparações de Investimentos")
+            st.markdown(
+                """
+                Nesta página, o sistema gera automaticamente um relatório informativo sobre **investimentos ESG** na XP.
+                A análise engloba:
+                - Rentabilidade média líquida dos produtos ESG (2023–2025) comparada com produtos tradicionais.
+                - Discussão sobre custo de oportunidade para investidores entre ESG e não-ESG.
+                - Aplicação do modelo **CAPM** a ativos ESG versus ativos tradicionais.
+                - Tabelas e gráficos resumidos.
+                """
+            )
+
+            # 6.1) Valida que a chave da API existe
+            if "api_key" not in st.session_state or not st.session_state.api_key:
+                st.error("Para carregar o portal informativo, configure sua chave OpenAI em “Configurar Chave da API OpenAI”.")
+                st.stop()
+
+            # 6.2) Prompt único para enviar ao ChatGPT
+            prompt_portal = (
+                "Você é um economista especializado em investimentos ESG. Gere um relatório técnico em formato de página informativa "
+                "sobre:\n\n"
+                "1. Rentabilidade média líquida dos produtos ESG comercializados na XP Investimentos desde o início de 2023 até o momento, "
+                "comparando com investimentos tradicionais (fundos, ações, renda fixa, etc.). Inclua tabelas comparativas de rentabilidade e "
+                "volatilidade, citando fontes (ex.: ISE B3, Ibovespa, relatórios setoriais).\n\n"
+                "2. Conceito de custo de oportunidade para o investidor que opta por ESG em vez de produtos tradicionais; explique trade‐offs e "
+                "exemplifique com números.\n\n"
+                "3. Aplicação do modelo CAPM (Capital Asset Pricing Model) a ativos ESG: mostre como calcular o retorno esperado ajustado ao risco "
+                "(beta) e compare com ativos tradicionais.\n\n"
+                "4. Conclusões sobre se houve custo de oportunidade ou prêmio ESG (alpha) no período, citando estudos ou dados de mercado.\n\n"
+                "Estruture o conteúdo com títulos, subtítulos e formate como um único artigo informativo de economia. Use linguagem acadêmica profissional."
+            )
+
+            with st.spinner("Gerando relatório informativo..."):
+                try:
+                    openai.api_key = st.session_state.api_key
+
+                    resposta = openai.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {"role": "system", "content": "Você é um assistente especializado em Economia e Investimentos ESG."},
+                            {"role": "user",   "content": prompt_portal}
+                        ],
+                        temperature=0.7,
+                        max_tokens=1200
+                    )
+
+                    # Acessa a resposta corretamente
+                    texto_relatorio = resposta.choices[0].message.content
+                    st.markdown(texto_relatorio)
+
+                except Exception as e:
+                    st.error(f"Erro ao gerar o relatório: {e}")
+
+            # 6.3) Exibe referências sempre abaixo
+            st.markdown("---")
+            st.subheader("Referências Utilizadas")
+            st.markdown(
+                """
+                - **ISE B3 vs Ibovespa**  
+                  *Desempenho histórico e volatilidade dos índices (fonte: B3).*  
+                - **Relatório Itaú BBA (Fundos ESG)**  
+                  *Dados de rentabilidade média de fundos de ações ESG (2022–2024).*  
+                - **Publicações sobre Green Bonds**  
+                  *Informações sobre emissores verdes e “greenium” no mercado global.*  
+                - **Estudos Acadêmicos (2021–2024)**  
+                  *Comparação de retornos ajustados ao risco entre carteiras ESG e não ESG em mercados emergentes.*  
+                """
+            )
 
     elif aba == " Produtos ESG":
         st.title(" Produtos ESG")
