@@ -447,6 +447,135 @@ if st.session_state.usuario:
     
             # e) Persiste histórico
             salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+        subaba = st.radio(
+            "Selecione a funcionalidade:",
+            ["Conversa", "Portal Informativo ESG"],
+            index=1,  # Por padrão já seleciona o portal
+            horizontal=True
+        )
+
+        # ——— SUBABA: CONVERSA (mantém seu código atual) ———
+        if subaba == "Conversa":
+            # Aqui você deve colar TODO o seu código original de chat com Fábio,
+            # preservando as chamadas à API quando o usuário envia mensagem.
+            # Exemplo mínimo de interação (substitua pelo seu fluxo completo):
+            if "mensagens" not in st.session_state:
+                st.session_state.mensagens = []
+
+            for msg in st.session_state.mensagens:
+                st.chat_message(msg["role"]).write(msg["content"])
+
+            user_input = st.chat_input("Digite sua pergunta para o Fábio:")
+
+            if user_input:
+                st.chat_message("user").write(user_input)
+                st.session_state.mensagens.append({"role": "user", "content": user_input})
+
+                # Monta contexto do cliente, se houver referência
+                client_context = None
+                m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
+                if m:
+                    cli_id = int(m.group(1))
+                    rec = df_clients.loc[df_clients[id_col] == cli_id]
+                    if not rec.empty:
+                        rec = rec.iloc[0]
+                        client_context = (
+                            f"DADOS DO CLIENTE {cli_id}:\n"
+                            f"• Idade: {rec[age_col]}\n"
+                            f"• Perfil de risco: {rec[risk_col]}\n"
+                            f"• Engajamento ESG: {rec[engagement_col]}\n"
+                            f"• Propensão ESG: {rec[prop_col]}\n"
+                            f"• Carteira: {rec[carteira_col]}\n"
+                        )
+
+                messages = [SYSTEM_PROMPT]
+                if client_context:
+                    messages.append({"role": "system", "content": client_context})
+                messages += st.session_state.mensagens
+
+                openai.api_key = st.session_state.api_key
+                try:
+                    response = openai.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=messages,
+                        temperature=0.7,
+                        max_tokens=700
+                    )
+                    fabio_reply = response.choices[0].message.content
+                except Exception as e:
+                    fabio_reply = f"Erro na chamada à API: {e}"
+
+                st.chat_message("assistant").write(fabio_reply)
+                st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
+                salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+
+        # ——— SUBABA: PORTAL Informativo ESG (chamada automática à API) ———
+        elif subaba == "Portal Informativo ESG":
+            st.header("📊 Portal Informativo: ESG e Comparações de Investimentos")
+            st.markdown(
+                """
+                Nesta página, o sistema gera automaticamente um relatório informativo sobre **investimentos ESG** na XP.
+                A análise engloba:
+                - Rentabilidade média líquida dos produtos ESG (2023–2025) comparada com produtos tradicionais.
+                - Discussão sobre custo de oportunidade para investidores entre ESG e não-ESG.
+                - Aplicação do modelo **CAPM** a ativos ESG versus ativos tradicionais.
+                - Tabelas e gráficos resumidos (quando aplicável).
+                """
+            )
+
+            # Verifica se a chave da API está configurada
+            if "api_key" not in st.session_state or not st.session_state.api_key:
+                st.error("Para carregar o portal informativo, configure sua chave OpenAI em “Configurar Chave da API OpenAI”.")
+                st.stop()
+
+            # Prompt único que pede o relatório detalhado
+            prompt_portal = (
+                "Você é um economista especializado em investimentos ESG. Gere um relatório técnico em formato de página informativa "
+                "sobre:\n\n"
+                "1. Rentabilidade média líquida dos produtos ESG comercializados na XP Investimentos desde o início de 2023 até o momento, "
+                "comparando com investimentos tradicionais (fundos, ações, renda fixa, etc.). Inclua tabelas comparativas de rentabilidade e "
+                "volatilidade, citando fontes (ex.: ISE B3, Ibovespa, relatórios setoriais).\n\n"
+                "2. Conceito de custo de oportunidade para o investidor que opta por ESG em vez de produtos tradicionais; explique trade‐offs e "
+                "exemplifique com números.\n\n"
+                "3. Aplicação do modelo CAPM (Capital Asset Pricing Model) a ativos ESG: mostre como calcular o retorno esperado ajustado ao risco "
+                "(beta) e compare com ativos tradicionais.\n\n"
+                "4. Conclusões sobre se houve custo de oportunidade ou prêmio ESG (alpha) no período, citando estudos ou dados de mercado.\n\n"
+                "Estruture o conteúdo com títulos, subtítulos e formate como um único artigo informativo de economia. Use linguagem acadêmica profissional."
+            )
+
+            with st.spinner("Gerando relatório informativo com o ChatGPT..."):
+                try:
+                    openai.api_key = st.session_state.api_key
+                    resposta = openai.ChatCompletion.create(
+                        model="gpt-4o",
+                        messages=[
+                            {"role": "system", "content": "Você é um assistente especializado em Economia e Investimentos ESG."},
+                            {"role": "user", "content": prompt_portal}
+                        ],
+                        temperature=0.7,
+                        max_tokens=1200
+                    )
+                    texto_relatorio = resposta.choices[0].message["content"]
+                    st.markdown(texto_relatorio)
+
+                except Exception as e:
+                    st.error(f"Erro ao gerar o relatório: {e}")
+
+            # ——— Seção de Referências (sempre exibida abaixo do relatório) ———
+            st.markdown("---")
+            st.subheader("📚 Referências Utilizadas")
+            st.markdown(
+                """
+                - **ISE B3 vs Ibovespa**  
+                  *Desempenho histórico e volatilidade dos índices (fonte: B3).*  
+                - **Relatório Itaú BBA (Fundos ESG)**  
+                  *Dados de rentabilidade média de fundos de ações ESG (2022–2024).*  
+                - **Publicações sobre Green Bonds**  
+                  *Informações sobre emissores verdes e “greenium” no mercado global.*  
+                - **Estudos Acadêmicos (2021–2024)**  
+                  *Comparação de retornos ajustados ao risco entre carteiras ESG e não ESG em mercados emergentes.*  
+                """
+            )
 
     elif aba == " Produtos ESG":
         st.title(" Produtos ESG")
