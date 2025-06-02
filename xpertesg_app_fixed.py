@@ -815,7 +815,7 @@ if st.session_state.usuario:
                 color_discrete_map={
                     "Renda Variável": TRAD1,
                     "ETF": TRAD2,
-                    "Multimercado": TRAD3
+                    "Multimercado": TRAD3}
             )
             st.plotly_chart(fig1, use_container_width=True)
     
