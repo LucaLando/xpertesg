@@ -218,7 +218,7 @@ if st.session_state.usuario:
 
     elif aba == " Chat com Fábio":
         st.title(" Fábio – Assistente Virtual ESG")
-    
+
         # ——— 1a) Uploads opcionais ———
         uploaded_clients = st.file_uploader(
             "Faça upload da base de clientes (CSV)",
@@ -230,7 +230,7 @@ if st.session_state.usuario:
             type=["csv", "json"],
             help="Se você tiver um CSV/JSON com os produtos ESG, faça o upload aqui."
         )
-    
+
         # ——— 1) Configuração da chave da API ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
@@ -238,12 +238,20 @@ if st.session_state.usuario:
             st.session_state.api_key = st.text_input(
                 "Cole aqui sua API Key:", type="password", key="openai_api_key"
             )
-    
+
         # ——— 2) Histórico de mensagens ———
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
-    
-        # ——— 3) Construção de df_clients já contendo a coluna 'Carteira' ———
+
+        # ——— Subaba ———
+        subaba = st.radio(
+            "Selecione a funcionalidade:",
+            ["Conversa", "Portal Informativo ESG"],
+            index=1,  # já abertos no Portal Informativo
+            horizontal=True
+        )
+
+        # ——— Preparação de df_clients (caso haja upload) ———
         if uploaded_clients is None:
             df_clients = df.copy()
         else:
@@ -252,22 +260,22 @@ if st.session_state.usuario:
             except Exception as e:
                 st.error(f"Erro ao ler arquivo de clientes: {e}")
                 st.stop()
-    
+
             if "PerfilRisco" in df_raw.columns:
                 df_raw["PerfilRisco"] = df_raw["PerfilRisco"].map(mapa_perfil).fillna(df_raw["PerfilRisco"])
-    
+
             df_clients = simulate_portfolios(df_raw)
-    
+
             if "propensao_esg" in df_clients.columns:
                 df_clients["faixa_propensao"] = df_clients["propensao_esg"].apply(classificar_faixa)
-    
+
             if "nome" not in df_clients.columns:
                 df_clients["nome"] = [random.choice(nomes_masculinos + nomes_femininos) for _ in range(len(df_clients))]
-    
+
             if "PerfilRisco" in df_clients.columns:
                 df_clients["PerfilRisco"] = df_clients["PerfilRisco"].map(mapa_perfil).fillna(df_clients["PerfilRisco"])
-    
-        # ——— 4) Carrega lista de produtos ESG, se houver ———
+
+        # ——— Carrega lista de produtos ESG, se houver ———
         if uploaded_products is not None:
             try:
                 if uploaded_products.name.lower().endswith(".csv"):
@@ -280,21 +288,21 @@ if st.session_state.usuario:
                 produtos_esg = None
         else:
             produtos_esg = None
-    
-        # ——— 5) Verificação de colunas obrigatórias em df_clients ———
+
+        # ——— Verificação de colunas obrigatórias em df_clients ———
         id_col         = "ID"
         age_col        = "Idade"
         risk_col       = "PerfilRisco"
         engagement_col = "EngajamentoESG"
         prop_col       = "propensao_esg"
         carteira_col   = "Carteira"
-    
+
         for c in (id_col, age_col, risk_col, engagement_col, prop_col, carteira_col):
             if c not in df_clients.columns:
                 st.error(f"Coluna obrigatória não encontrada no CSV: {c}")
                 st.stop()
-    
-        # ——— 6) Prompt do sistema (atualizado com faixas de propensão e macro) ———
+
+        # ——— Prompt do sistema para Fábio ———
         SYSTEM_PROMPT = {
             "role": "system",
             "content": """
@@ -383,31 +391,22 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
 - Manter threads fixos por assessor (usar `thread_id`).  
 - Logar interações (timestamp, ID do assessor, input e resposta).  
 - Fallback: “Produto não consta na base atual. Consulte a plataforma oficial da XP.”
-
             """
         }
-    
-        # ——— 7) Seleção de subaba ———
-        subaba = st.radio(
-            "Selecione a funcionalidade:",
-            ["Conversa", "Portal Informativo ESG"],
-            index=1,  # “Portal” será a opção padrão
-            horizontal=True
-        )
 
         # ——— SUBABA: CONVERSA ———
         if subaba == "Conversa":
             # Exibe histórico de mensagens
             for msg in st.session_state.mensagens:
                 st.chat_message(msg["role"]).write(msg["content"])
-    
+
             # Captura input do usuário
             user_input = st.chat_input("Digite sua pergunta para o Fábio:")
-    
+
             if user_input:
                 st.chat_message("user").write(user_input)
                 st.session_state.mensagens.append({"role": "user", "content": user_input})
-    
+
                 # Extrai contexto do cliente
                 client_context = None
                 m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
@@ -424,12 +423,12 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                             f"• Propensão ESG: {rec[prop_col]}\n"
                             f"• Carteira: {rec[carteira_col]}\n"
                         )
-    
+
                 messages = [SYSTEM_PROMPT]
                 if client_context:
                     messages.append({"role": "system", "content": client_context})
                 messages += st.session_state.mensagens
-    
+
                 openai.api_key = st.session_state.api_key
                 try:
                     response = openai.chat.completions.create(
@@ -441,7 +440,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                     fabio_reply = response.choices[0].message.content
                 except Exception as e:
                     fabio_reply = f"Erro na chamada à API: {e}"
-    
+
                 st.chat_message("assistant").write(fabio_reply)
                 st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
                 salvar_historico(st.session_state.usuario, st.session_state.mensagens)
@@ -498,7 +497,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 except Exception as e:
                     st.error(f"Erro ao gerar o relatório: {e}")
 
-            # ——— Seção de Referências (sempre exibida abaixo do relatório) ———
+            # ——— Seção de Referências ———
             st.markdown("---")
             st.subheader("📚 Referências Utilizadas")
             st.markdown(
