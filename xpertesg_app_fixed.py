@@ -245,7 +245,6 @@ if st.session_state.usuario:
 
         # ——— 4) Exibe imediatamente a escolha de sub-aba ———
         subaba = st.radio(
-            "Selecione a funcionalidade:",
             ["Conversa", "Portal Informativo ESG"],
             index=1,  # “Portal Informativo ESG” será mostrado por padrão
             horizontal=True
