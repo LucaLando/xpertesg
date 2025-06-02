@@ -364,7 +364,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
 - Utilize a coluna “carteira” da base para responder sobre composição de portfólio.
 - Em todas as comunicações, **SEM-PRE** destaque os retornos financeiros históricos e expectativas futuras dos fundos.
 - Inclua análises comparativas entre o desempenho do fundo e indicadores macroeconômicos:  
-  • Exemplo: “Se um fundo rendeu 16% no último ano e a SELIC está em 14,75%, isso é considerado bom desempenho.”  
+  • Exemplo: “Se um fundo rendeu 16% nos últimos 12 meses e a SELIC está em 14,75%, isso é considerado bom desempenho.”  
   • Cite também inflação, prazos, volatilidade e outros fatores macro quando relevante.
 
 **Definição de estratégias de abordagem por faixa de propensão ESG**
@@ -386,7 +386,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
      2. Valor agregado no médio/longo prazo (menor risco reputacional).  
      3. Performance comparada a benchmarks (CDI, IBOV).  
    - Exemplo de frase:  
-     “Este fundo investe em empresas que atendem a padrões ESG reconhecidos, mas tenha em vista que o principal ponto é a performance: ele rendeu 14% no último ano, frente a 10% do CDI, com liquidez de D+1.”
+     “Este fundo investe em empresas que atendem a padrões ESG reconhecidos, mas tenha em vista que o principal ponto é a performance: ele rendeu 14% nos últimos 12 meses, frente a 10% do CDI, com liquidez de D+1.”
 
 3. **Propensão ESG alta (acima de 0,76)**  
    - Enriquecer a conversa com detalhes de impacto ESG:  
@@ -394,7 +394,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
      2. Selos ou certificações (Selo B, Índice ESG da S&P).  
      3. Impacto social/ambiental (carbono, green bonds).  
    - Ainda assim, mantenha o retorno financeiro como ponto central:  
-     1. “Apesar de forte viés ESG, entregou 13% no último ano, contra 11% do CDI.”  
+     1. “Apesar de forte viés ESG, entregou 13% nos últimos 12 meses, contra 11% do CDI.”  
      2. Compare com SELIC e outros indicadores macroeconômicos:  
         - “Com a SELIC em 14,75%, esse retorno líquido de 13% mostra competitividade, considerando taxa de 1% a.a.”  
    - Exemplo de frase:  
@@ -424,7 +424,31 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                             f"DADOS DO CLIENTE {cli_id}:\n"
                             f"• Idade: {rec[age_col]}\n"
                             f"• Perfil de risco: {rec[risk_col]}\n"
-                            f"• Engajamento ESG: {rec[engagement
+                            f"• Engajamento ESG: {rec[engagement_col]}\n"
+                            f"• Propensão ESG: {rec[prop_col]}\n"
+                            f"• Carteira: {rec[carteira_col]}\n"
+                        )
+
+                messages = [SYSTEM_PROMPT]
+                if client_context:
+                    messages.append({"role": "system", "content": client_context})
+                messages += st.session_state.mensagens
+
+                openai.api_key = st.session_state.api_key
+                try:
+                    response = openai.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=messages,
+                        temperature=0.7,
+                        max_tokens=700
+                    )
+                    fabio_reply = response.choices[0].message.content
+                except Exception as e:
+                    fabio_reply = f"Erro na chamada à API: {e}"
+
+                st.chat_message("assistant").write(fabio_reply)
+                st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
+                salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
         # ——— 6) Se o usuário escolheu “Portal Informativo ESG” — CHAMA APENAS A API ———
         elif subaba == "Portal Informativo ESG":
