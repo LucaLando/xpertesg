@@ -436,6 +436,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
 
 
         # ——— SUB-ABA “Portal Informativo ESG” — PULAR VALIDAÇÕES DE CLIENTES ———
+        # ——— SUB-ABA: PORTAL Informativo ESG ———
         elif subaba == "Portal Informativo ESG":
             st.header("📊 Portal Informativo: ESG e Comparações de Investimentos")
             st.markdown(
@@ -449,12 +450,12 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 """
             )
 
-            # Checa se a chave da API está disponível
+            # Verifica se a chave da API está configurada
             if "api_key" not in st.session_state or not st.session_state.api_key:
                 st.error("Para carregar o portal informativo, configure sua chave OpenAI em “Configurar Chave da API OpenAI”.")
                 st.stop()
 
-            # Prompt único para gerar o relatório completo
+            # Prompt único que pede o relatório detalhado
             prompt_portal = (
                 "Você é um economista especializado em investimentos ESG. Gere um relatório técnico em formato de página informativa "
                 "sobre:\n\n"
@@ -472,7 +473,8 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
             with st.spinner("Gerando relatório informativo com o ChatGPT..."):
                 try:
                     openai.api_key = st.session_state.api_key
-                    resposta = openai.ChatCompletion.create(
+                    # Usando a nova sintaxe openai.chat.completions.create(…)
+                    resposta = openai.chat.completions.create(
                         model="gpt-4o",
                         messages=[
                             {"role": "system", "content": "Você é um assistente especializado em Economia e Investimentos ESG."},
