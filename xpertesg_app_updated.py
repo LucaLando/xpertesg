@@ -253,42 +253,52 @@ if st.session_state.usuario:
 
         # ——— 5) Se o usuário escolheu “Conversa” — BLOCO COMPLETO DE ATENDIMENTO ———
         if subaba == "Conversa":
+            # 5.0) Definimos as variáveis de coluna OBRIGATÓRIAS independentemente de haver CSV
+            id_col         = "id"
+            age_col        = "idade"
+            risk_col       = "perfilrisco"
+            engagement_col = "engajamentoesg"
+            prop_col       = "propensao_esg"
+            carteira_col   = "carteira"
+
             # 5.1) Construção de df_clients apenas nesta sub-aba
             if uploaded_clients is None:
+                # Sem upload: assumimos que 'df' já veio preparado em outro ponto do app
                 df_clients = df.copy()
+                # Normaliza colunas do df global para minúsculo
+                df_clients.columns = df_clients.columns.str.strip().str.lower()
+                # Se não existir “id” no df global, cria usando o índice
+                if id_col not in df_clients.columns:
+                    df_clients[id_col] = df_clients.index
+                st.write("Colunas detectadas em df (global):", list(df_clients.columns))
+
             else:
+                # 5.1.1) Lê o CSV de clientes e normaliza colunas para minúsculo
                 try:
                     df_raw = pd.read_csv(uploaded_clients)
                 except Exception as e:
                     st.error(f"Erro ao ler arquivo de clientes: {e}")
                     st.stop()
 
-                # 5.1.1) Normaliza os nomes de coluna para minúsculo e sem espaços
                 df_raw.columns = df_raw.columns.str.strip().str.lower()
-                # (Opcional) Exibe quais colunas o pandas enxergou:
                 st.write("Colunas detectadas no CSV de clientes:", list(df_raw.columns))
 
-                # 5.1.2) Definição das variáveis de coluna, em minúsculo conforme o CSV
-                # Ajuste aqui caso seu CSV tenha outro nome (ex: 'idcliente' em vez de 'id')
-                id_col         = "id"
-                age_col        = "idade"
-                risk_col       = "perfilrisco"
-                engagement_col = "engajamentoesg"
-                prop_col       = "propensao_esg"
-                carteira_col   = "carteira"
+                # 5.1.2) Se não existir “id” no CSV, criamos a partir do índice
+                if id_col not in df_raw.columns:
+                    df_raw[id_col] = df_raw.index
 
-                # 5.1.3) Mapea 'perfilrisco' se vier numérico (opcional)
+                # 5.1.3) Mapea 'perfilrisco' se vier numérico (caso exista essa coluna)
                 if risk_col in df_raw.columns:
                     df_raw[risk_col] = df_raw[risk_col].map(mapa_perfil).fillna(df_raw[risk_col])
 
-                # 5.1.4) Gera a coluna 'Carteira' usando a função simulate_portfolios
+                # 5.1.4) Gera a coluna 'carteira' usando a função simulate_portfolios
                 df_clients = simulate_portfolios(df_raw)
 
                 # 5.1.5) Caso exista 'propensao_esg', criamos 'faixa_propensao'
                 if prop_col in df_clients.columns:
                     df_clients["faixa_propensao"] = df_clients[prop_col].apply(classificar_faixa)
 
-                # 5.1.6) Se não tiver 'nome', geramos nomes fictícios
+                # 5.1.6) Se não tiver a coluna 'nome', geramos nomes fictícios
                 if "nome" not in df_clients.columns:
                     df_clients["nome"] = [
                         random.choice(nomes_masculinos + nomes_femininos)
@@ -299,7 +309,7 @@ if st.session_state.usuario:
                 if risk_col in df_clients.columns:
                     df_clients[risk_col] = df_clients[risk_col].map(mapa_perfil).fillna(df_clients[risk_col])
 
-            # 5.2) Carrega lista de produtos ESG, se houver
+            # 5.2) Carrega lista de produtos ESG, caso haja upload
             if uploaded_products is not None:
                 try:
                     if uploaded_products.name.lower().endswith(".csv"):
@@ -314,7 +324,6 @@ if st.session_state.usuario:
                 produtos_esg = None
 
             # 5.3) Verificação de colunas obrigatórias em df_clients
-            # (Aqui as variáveis id_col, age_col etc. já foram definidas)
             obrigatorias = [id_col, age_col, risk_col, engagement_col, prop_col, carteira_col]
             for col_name in obrigatorias:
                 if col_name not in df_clients.columns:
@@ -352,7 +361,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
 - Ao receber dados do cliente (ID, nome, idade, perfil de risco, engajamento ESG, propensão ESG, carteira), use-os imediatamente na resposta.
 - Nunca use frases de transição (“um momento”, “vou verificar”) ou peça para consultar outra área.
 - Se faltar algum campo, mencione apenas o nome do campo ausente.
-- Utilize a coluna “Carteira” da base para responder sobre composição de portfólio.
+- Utilize a coluna “carteira” da base para responder sobre composição de portfólio.
 - Em todas as comunicações, **SEM-PRE** destaque os retornos financeiros históricos e expectativas futuras dos fundos.
 - Inclua análises comparativas entre o desempenho do fundo e indicadores macroeconômicos:  
   • Exemplo: “Se um fundo rendeu 16% no último ano e a SELIC está em 14,75%, isso é considerado bom desempenho.”  
@@ -415,31 +424,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                             f"DADOS DO CLIENTE {cli_id}:\n"
                             f"• Idade: {rec[age_col]}\n"
                             f"• Perfil de risco: {rec[risk_col]}\n"
-                            f"• Engajamento ESG: {rec[engagement_col]}\n"
-                            f"• Propensão ESG: {rec[prop_col]}\n"
-                            f"• Carteira: {rec[carteira_col]}\n"
-                        )
-
-                messages = [SYSTEM_PROMPT]
-                if client_context:
-                    messages.append({"role": "system", "content": client_context})
-                messages += st.session_state.mensagens
-
-                openai.api_key = st.session_state.api_key
-                try:
-                    response = openai.chat.completions.create(
-                        model="gpt-3.5-turbo",
-                        messages=messages,
-                        temperature=0.7,
-                        max_tokens=700
-                    )
-                    fabio_reply = response.choices[0].message.content
-                except Exception as e:
-                    fabio_reply = f"Erro na chamada à API: {e}"
-
-                st.chat_message("assistant").write(fabio_reply)
-                st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
-                salvar_historico(st.session_state.usuario, st.session_state.mensagens)
+                            f"• Engajamento ESG: {rec[engagement
 
         # ——— 6) Se o usuário escolheu “Portal Informativo ESG” — CHAMA APENAS A API ———
         elif subaba == "Portal Informativo ESG":
