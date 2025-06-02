@@ -219,7 +219,7 @@ if st.session_state.usuario:
     elif aba == " Chat com Fábio":
         st.title(" Fábio – Assistente Virtual ESG")
 
-        # ——— (1) Uploads opcionais (clientes e produtos) ———
+        # ——— 1) Uploads opcionais (clientes e produtos) ———
         uploaded_clients = st.file_uploader(
             "Faça upload da base de clientes (CSV)",
             type=["csv"],
@@ -231,7 +231,7 @@ if st.session_state.usuario:
             help="Se você tiver um CSV/JSON com os produtos ESG, faça o upload aqui."
         )
 
-        # ——— (2) Configuração da chave da API ———
+        # ——— 2) Configuração da chave da API ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
         with st.expander(" Configurar Chave da API OpenAI", expanded=True):
@@ -239,55 +239,48 @@ if st.session_state.usuario:
                 "Cole aqui sua API Key:", type="password", key="openai_api_key"
             )
 
-        # ——— (3) Histórico de mensagens (somente para “Conversa”) ———
+        # ——— 3) Histórico de mensagens (para “Conversa”) ———
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
 
-        # ——— (4) Seleção de sub-aba ———
+        # ——— 4) Exibe imediatamente a escolha de sub-aba ———
         subaba = st.radio(
             "Selecione a funcionalidade:",
             ["Conversa", "Portal Informativo ESG"],
-            index=1,  # “Portal Informativo ESG” como padrão
+            index=1,  # “Portal Informativo ESG” será mostrado por padrão
             horizontal=True
         )
 
-        # ——— SUB-ABA “Conversa” — CONSTRUÇÃO E VALIDAÇÃO DE df_clients ———
+        # ——— 5) Se o usuário escolheu “Conversa” — BLOCO COMPLETO DE ATENDIMENTO ———
         if subaba == "Conversa":
-            # ——— 4.1) Preparação de df_clients ———
+            # 5.1) Construção de df_clients apenas nesta sub-aba
             if uploaded_clients is None:
-                # Se não houver CSV, utilizamos o DataFrame global 'df'
                 df_clients = df.copy()
             else:
-                # Se fez upload, lemos o CSV e simulamos a carteira
                 try:
                     df_raw = pd.read_csv(uploaded_clients)
                 except Exception as e:
                     st.error(f"Erro ao ler arquivo de clientes: {e}")
                     st.stop()
 
-                # Mapeia 'PerfilRisco', se existir
                 if "PerfilRisco" in df_raw.columns:
                     df_raw["PerfilRisco"] = df_raw["PerfilRisco"].map(mapa_perfil).fillna(df_raw["PerfilRisco"])
 
-                # Chama sua função que gera a coluna 'Carteira' (simulate_portfolios)
                 df_clients = simulate_portfolios(df_raw)
 
-                # Caso exista 'propensao_esg', criamos 'faixa_propensao'
                 if "propensao_esg" in df_clients.columns:
                     df_clients["faixa_propensao"] = df_clients["propensao_esg"].apply(classificar_faixa)
 
-                # Se não tiver 'nome', geramos nomes fictícios
                 if "nome" not in df_clients.columns:
                     df_clients["nome"] = [
                         random.choice(nomes_masculinos + nomes_femininos)
                         for _ in range(len(df_clients))
                     ]
 
-                # Mapeia 'PerfilRisco' novamente (caso seja numérico)
                 if "PerfilRisco" in df_clients.columns:
                     df_clients["PerfilRisco"] = df_clients["PerfilRisco"].map(mapa_perfil).fillna(df_clients["PerfilRisco"])
 
-            # ——— 4.2) Carrega lista de produtos ESG, caso exista ———
+            # 5.2) Carrega lista de produtos ESG, se houver
             if uploaded_products is not None:
                 try:
                     if uploaded_products.name.lower().endswith(".csv"):
@@ -301,7 +294,7 @@ if st.session_state.usuario:
             else:
                 produtos_esg = None
 
-            # ——— 4.3) Verificação de colunas obrigatórias em df_clients ———
+            # 5.3) Verificação de colunas obrigatórias em df_clients
             id_col         = "ID"
             age_col        = "Idade"
             risk_col       = "PerfilRisco"
@@ -314,7 +307,7 @@ if st.session_state.usuario:
                     st.error(f"Coluna obrigatória não encontrada no CSV: {c}")
                     st.stop()
 
-            # ——— 4.4) Prompt do sistema para a conversa com Fábio ———
+            # 5.4) Prompt do sistema para Fábio
             SYSTEM_PROMPT = {
                 "role": "system",
                 "content": """
@@ -386,7 +379,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 """
             }
 
-            # ——— 4.5) Exibir histórico + input de chat ———
+            # 5.5) Exibe histórico de mensagens e campo de entrada
             for msg in st.session_state.mensagens:
                 st.chat_message(msg["role"]).write(msg["content"])
 
@@ -396,7 +389,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 st.chat_message("user").write(user_input)
                 st.session_state.mensagens.append({"role": "user", "content": user_input})
 
-                # Extrai contexto do cliente
+                # Extrai contexto (caso mencione “cliente X”)
                 client_context = None
                 m = re.search(r"cliente\s+(\d+)", user_input, flags=re.IGNORECASE)
                 if m:
@@ -434,9 +427,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
                 salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
-
-        # ——— SUB-ABA “Portal Informativo ESG” — PULAR VALIDAÇÕES DE CLIENTES ———
-        # ——— SUB-ABA: PORTAL Informativo ESG ———
+        # ——— 6) Se o usuário escolheu “Portal Informativo ESG” — CHAMA APENAS A API ———
         elif subaba == "Portal Informativo ESG":
             st.header("📊 Portal Informativo: ESG e Comparações de Investimentos")
             st.markdown(
@@ -450,12 +441,12 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 """
             )
 
-            # Verifica se a chave da API está configurada
+            # 6.1) Valida que a chave da API existe
             if "api_key" not in st.session_state or not st.session_state.api_key:
                 st.error("Para carregar o portal informativo, configure sua chave OpenAI em “Configurar Chave da API OpenAI”.")
                 st.stop()
 
-            # Prompt único que pede o relatório detalhado
+            # 6.2) Prompt único para enviar ao ChatGPT
             prompt_portal = (
                 "Você é um economista especializado em investimentos ESG. Gere um relatório técnico em formato de página informativa "
                 "sobre:\n\n"
@@ -473,23 +464,25 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
             with st.spinner("Gerando relatório informativo com o ChatGPT..."):
                 try:
                     openai.api_key = st.session_state.api_key
-                    # Usando a nova sintaxe openai.chat.completions.create(…)
+
                     resposta = openai.chat.completions.create(
                         model="gpt-4o",
                         messages=[
                             {"role": "system", "content": "Você é um assistente especializado em Economia e Investimentos ESG."},
-                            {"role": "user", "content": prompt_portal}
+                            {"role": "user",   "content": prompt_portal}
                         ],
                         temperature=0.7,
                         max_tokens=1200
                     )
-                    texto_relatorio = resposta.choices[0].message.content()
+
+                    # Acessa a resposta corretamente
+                    texto_relatorio = resposta.choices[0].message.content
                     st.markdown(texto_relatorio)
 
                 except Exception as e:
                     st.error(f"Erro ao gerar o relatório: {e}")
 
-            # ——— Seção de Referências ———
+            # 6.3) Exibe referências sempre abaixo
             st.markdown("---")
             st.subheader("📚 Referências Utilizadas")
             st.markdown(
