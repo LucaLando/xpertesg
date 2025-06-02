@@ -295,7 +295,7 @@ if st.session_state.usuario:
                 produtos_esg = None
 
             # 5.3) Verificação de colunas obrigatórias em df_clients
-            id_col         = "ID"
+            id_col         = "id"
             age_col        = "Idade"
             risk_col       = "PerfilRisco"
             engagement_col = "EngajamentoESG"
