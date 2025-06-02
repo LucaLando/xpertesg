@@ -473,7 +473,7 @@ if st.session_state.usuario:
                 except Exception as e:
                     st.error(f"Erro ao gerar informações ESG: {e}")
                     
-    elif aba == " Produtos ESG":
+    if aba == " Produtos ESG":
         st.title(" Produtos ESG")
         produtos_esg = [
             {"nome": "Fundo XP Essencial ESG", "tipo": "Renda Fixa", "risco": "Baixo", "taxa": "0,9% a.a.", "arquivo": "lamina_xp_essencial.pdf"},
