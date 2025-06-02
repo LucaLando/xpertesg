@@ -218,7 +218,7 @@ if st.session_state.usuario:
 
     elif aba == " Chat com Fábio":
         subtab1, subtab2 = st.tabs(["Conversa", "Portal Informações ESG"])
-            with subtab1:
+    with subtab1:
     try:
                 st.title(" Fábio – Assistente Virtual ESG")
             
