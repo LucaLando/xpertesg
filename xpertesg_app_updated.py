@@ -483,7 +483,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                         temperature=0.7,
                         max_tokens=1200
                     )
-                    texto_relatorio = resposta.choices[0].message["content"]
+                    texto_relatorio = resposta.choices[0].message.content()
                     st.markdown(texto_relatorio)
 
                 except Exception as e:
