@@ -406,6 +406,8 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
         - “Com a SELIC em 14,75%, esse retorno líquido de 13% mostra competitividade, considerando taxa de 1% a.a.”  
    - Exemplo de frase:  
      “Este fundo investe em empresas com compromisso ESG de nível 1 ou 2, com Selo B, e entregou 15% nos últimos 12 meses, superando a SELIC de 14,75%.”
+                
+   Converta a variavel propensao esg para um numero em porcentagem com duas casas decimais             
                 """
             }
 
