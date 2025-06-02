@@ -22,7 +22,9 @@ COR_XP = "#FECB00"
 ALTO_ESG = "#1b8e40"
 MEDIO_ESG = "#3e6049"
 BAIXO_ESG = "#031d44"
-
+TRAD1 = "e0e0e0"
+TRAD2 = "031D44"
+TRAD3 = "04395E"
 
 # Função para simular carteira de cada cliente
 def simulate_portfolios(df):
@@ -807,7 +809,11 @@ if st.session_state.usuario:
                 df_atual,
                 names="Produto",
                 values="Valor",
-                title="Carteira Atual por Categoria"
+                title="Carteira Atual por Categoria",
+                color_discrete_map={
+                    "Renda Variável": TRAD1,
+                    "ETF": TRAD2,
+                    "Multimercado": TRAD3
             )
             st.plotly_chart(fig1, use_container_width=True)
     
