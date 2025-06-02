@@ -825,7 +825,7 @@ if st.session_state.usuario:
                 df_nova,
                 names="Produto",
                 values="Valor",
-                title="Carteira Recomendada com ESG"
+                title="Carteira Recomendada com ESG",
                  color="Produto",
                 color_discrete_map={
                     "Renda Variável Tradicional": TRAD1,
