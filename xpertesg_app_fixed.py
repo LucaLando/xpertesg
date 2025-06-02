@@ -572,9 +572,7 @@ if st.session_state.usuario:
             ))
 
             fig_gauge.update_layout(
-                height=400,
-                font=dict(size=16),
-                font_color="white"
+                height=400
             )
 
             st.plotly_chart(fig_gauge, use_container_width=True)
