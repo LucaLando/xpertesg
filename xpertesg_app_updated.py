@@ -270,6 +270,9 @@ if st.session_state.usuario:
                 # Se não existir “id” no df global, cria usando o índice
                 if id_col not in df_clients.columns:
                     df_clients[id_col] = df_clients.index
+                # Se não existir “carteira” no df global, criamos vazia
+                if carteira_col not in df_clients.columns:
+                    df_clients[carteira_col] = [""] * len(df_clients)
                 st.write("Colunas detectadas em df (global):", list(df_clients.columns))
 
             else:
@@ -294,18 +297,22 @@ if st.session_state.usuario:
                 # 5.1.4) Gera a coluna 'carteira' usando a função simulate_portfolios
                 df_clients = simulate_portfolios(df_raw)
 
-                # 5.1.5) Caso exista 'propensao_esg', criamos 'faixa_propensao'
+                # 5.1.5) Se simulate_portfolios não criou "carteira", criamos vazia
+                if carteira_col not in df_clients.columns:
+                    df_clients[carteira_col] = [""] * len(df_clients)
+
+                # 5.1.6) Caso exista 'propensao_esg', criamos 'faixa_propensao'
                 if prop_col in df_clients.columns:
                     df_clients["faixa_propensao"] = df_clients[prop_col].apply(classificar_faixa)
 
-                # 5.1.6) Se não tiver a coluna 'nome', geramos nomes fictícios
+                # 5.1.7) Se não tiver a coluna 'nome', geramos nomes fictícios
                 if "nome" not in df_clients.columns:
                     df_clients["nome"] = [
                         random.choice(nomes_masculinos + nomes_femininos)
                         for _ in range(len(df_clients))
                     ]
 
-                # 5.1.7) Mapea 'perfilrisco' novamente (caso seja numérico)    
+                # 5.1.8) Mapea 'perfilrisco' novamente (caso seja numérico)    
                 if risk_col in df_clients.columns:
                     df_clients[risk_col] = df_clients[risk_col].map(mapa_perfil).fillna(df_clients[risk_col])
 
@@ -353,7 +360,7 @@ Você é especialista em:
 • Ativos ambientais (Green Bonds, Marketplaces de Carbono)
 • Critérios ESG usados pela XP (frameworks SASB, ICVM 59, Taxonomia Verde)
 • Alinhamento a padrões internacionais (ODS/Agenda 2030, Selo B, índices CSA da S&P, CDP etc.)
-• Relação entre desempenho de fundos e contexto macroeconômico (SELIC, inflação, cenário político, taxas de juros)
+• Relaão entre desempenho de fundos e contexto macroeconômico (SELIC, inflação, cenário político, taxas de juros)
 
 Você se comunica com linguagem empresarial, técnica e confiável, em linha com o tom institucional da XP Inc.
 
@@ -367,7 +374,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
   • Exemplo: “Se um fundo rendeu 16% nos últimos 12 meses e a SELIC está em 14,75%, isso é considerado bom desempenho.”  
   • Cite também inflação, prazos, volatilidade e outros fatores macro quando relevante.
 
-**Definição de estratégias de abordagem por faixa de propensão ESG**
+**Definião de estratégias de abordagem por faixa de propensão ESG**
 1. **Propensão ESG baixa (até 0,40)**  
    - Não enfatize a temática ESG ou selos verdes: apresente o produto como um fundo de investimento tradicional.  
    - Foque em:  
@@ -520,7 +527,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                   *Comparação de retornos ajustados ao risco entre carteiras ESG e não ESG em mercados emergentes.*  
                 """
             )
-
+            
     elif aba == " Produtos ESG":
         st.title(" Produtos ESG")
         produtos_esg = [
