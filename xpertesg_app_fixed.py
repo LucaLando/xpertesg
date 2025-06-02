@@ -810,6 +810,8 @@ if st.session_state.usuario:
                 names="Produto",
                 values="Valor",
                 title="Carteira Atual por Categoria",
+                 title="Distribuição por Faixa ESG",
+                color="Produto",
                 color_discrete_map={
                     "Renda Variável": TRAD1,
                     "ETF": TRAD2,
