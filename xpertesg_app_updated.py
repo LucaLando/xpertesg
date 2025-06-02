@@ -219,7 +219,7 @@ if st.session_state.usuario:
     elif aba == " Chat com Fábio":
         st.title(" Fábio – Assistente Virtual ESG")
 
-        # ——— 1a) Uploads opcionais ———
+        # ——— (1) Uploads opcionais (clientes e produtos) ———
         uploaded_clients = st.file_uploader(
             "Faça upload da base de clientes (CSV)",
             type=["csv"],
@@ -231,7 +231,7 @@ if st.session_state.usuario:
             help="Se você tiver um CSV/JSON com os produtos ESG, faça o upload aqui."
         )
 
-        # ——— 1) Configuração da chave da API ———
+        # ——— (2) Configuração da chave da API ———
         if "api_key" not in st.session_state:
             st.session_state.api_key = ""
         with st.expander(" Configurar Chave da API OpenAI", expanded=True):
@@ -239,73 +239,85 @@ if st.session_state.usuario:
                 "Cole aqui sua API Key:", type="password", key="openai_api_key"
             )
 
-        # ——— 2) Histórico de mensagens ———
+        # ——— (3) Histórico de mensagens (somente para “Conversa”) ———
         if "mensagens" not in st.session_state:
             st.session_state.mensagens = []
 
-        # ——— Subaba ———
+        # ——— (4) Seleção de sub-aba ———
         subaba = st.radio(
             "Selecione a funcionalidade:",
             ["Conversa", "Portal Informativo ESG"],
-            index=1,  # já abertos no Portal Informativo
+            index=1,  # “Portal Informativo ESG” como padrão
             horizontal=True
         )
 
-        # ——— Preparação de df_clients (caso haja upload) ———
-        if uploaded_clients is None:
-            df_clients = df.copy()
-        else:
-            try:
-                df_raw = pd.read_csv(uploaded_clients)
-            except Exception as e:
-                st.error(f"Erro ao ler arquivo de clientes: {e}")
-                st.stop()
+        # ——— SUB-ABA “Conversa” — CONSTRUÇÃO E VALIDAÇÃO DE df_clients ———
+        if subaba == "Conversa":
+            # ——— 4.1) Preparação de df_clients ———
+            if uploaded_clients is None:
+                # Se não houver CSV, utilizamos o DataFrame global 'df'
+                df_clients = df.copy()
+            else:
+                # Se fez upload, lemos o CSV e simulamos a carteira
+                try:
+                    df_raw = pd.read_csv(uploaded_clients)
+                except Exception as e:
+                    st.error(f"Erro ao ler arquivo de clientes: {e}")
+                    st.stop()
 
-            if "PerfilRisco" in df_raw.columns:
-                df_raw["PerfilRisco"] = df_raw["PerfilRisco"].map(mapa_perfil).fillna(df_raw["PerfilRisco"])
+                # Mapeia 'PerfilRisco', se existir
+                if "PerfilRisco" in df_raw.columns:
+                    df_raw["PerfilRisco"] = df_raw["PerfilRisco"].map(mapa_perfil).fillna(df_raw["PerfilRisco"])
 
-            df_clients = simulate_portfolios(df_raw)
+                # Chama sua função que gera a coluna 'Carteira' (simulate_portfolios)
+                df_clients = simulate_portfolios(df_raw)
 
-            if "propensao_esg" in df_clients.columns:
-                df_clients["faixa_propensao"] = df_clients["propensao_esg"].apply(classificar_faixa)
+                # Caso exista 'propensao_esg', criamos 'faixa_propensao'
+                if "propensao_esg" in df_clients.columns:
+                    df_clients["faixa_propensao"] = df_clients["propensao_esg"].apply(classificar_faixa)
 
-            if "nome" not in df_clients.columns:
-                df_clients["nome"] = [random.choice(nomes_masculinos + nomes_femininos) for _ in range(len(df_clients))]
+                # Se não tiver 'nome', geramos nomes fictícios
+                if "nome" not in df_clients.columns:
+                    df_clients["nome"] = [
+                        random.choice(nomes_masculinos + nomes_femininos)
+                        for _ in range(len(df_clients))
+                    ]
 
-            if "PerfilRisco" in df_clients.columns:
-                df_clients["PerfilRisco"] = df_clients["PerfilRisco"].map(mapa_perfil).fillna(df_clients["PerfilRisco"])
+                # Mapeia 'PerfilRisco' novamente (caso seja numérico)
+                if "PerfilRisco" in df_clients.columns:
+                    df_clients["PerfilRisco"] = df_clients["PerfilRisco"].map(mapa_perfil).fillna(df_clients["PerfilRisco"])
 
-        # ——— Carrega lista de produtos ESG, se houver ———
-        if uploaded_products is not None:
-            try:
-                if uploaded_products.name.lower().endswith(".csv"):
-                    df_products_externo = pd.read_csv(uploaded_products)
-                else:
-                    df_products_externo = pd.read_json(uploaded_products)
-                produtos_esg = df_products_externo.to_dict(orient="records")
-            except Exception as e:
-                st.error(f"Erro ao ler arquivo de produtos ESG: {e}")
+            # ——— 4.2) Carrega lista de produtos ESG, caso exista ———
+            if uploaded_products is not None:
+                try:
+                    if uploaded_products.name.lower().endswith(".csv"):
+                        df_products_externo = pd.read_csv(uploaded_products)
+                    else:
+                        df_products_externo = pd.read_json(uploaded_products)
+                    produtos_esg = df_products_externo.to_dict(orient="records")
+                except Exception as e:
+                    st.error(f"Erro ao ler arquivo de produtos ESG: {e}")
+                    produtos_esg = None
+            else:
                 produtos_esg = None
-        else:
-            produtos_esg = None
 
-        # ——— Verificação de colunas obrigatórias em df_clients ———
-        id_col         = "ID"
-        age_col        = "Idade"
-        risk_col       = "PerfilRisco"
-        engagement_col = "EngajamentoESG"
-        prop_col       = "propensao_esg"
-        carteira_col   = "Carteira"
+            # ——— 4.3) Verificação de colunas obrigatórias em df_clients ———
+            id_col         = "ID"
+            age_col        = "Idade"
+            risk_col       = "PerfilRisco"
+            engagement_col = "EngajamentoESG"
+            prop_col       = "propensao_esg"
+            carteira_col   = "Carteira"
 
-        for c in (id_col, age_col, risk_col, engagement_col, prop_col, carteira_col):
-            if c not in df_clients.columns:
-                st.error(f"Coluna obrigatória não encontrada no CSV: {c}")
-                st.stop()
+            for c in (id_col, age_col, risk_col, engagement_col, prop_col, carteira_col):
+                if c not in df_clients.columns:
+                    st.error(f"Coluna obrigatória não encontrada no CSV: {c}")
+                    st.stop()
 
-        # ——— Prompt do sistema para Fábio ———
-        SYSTEM_PROMPT = {
-            "role": "system",
-            "content": """
+            # ——— 4.4) Prompt do sistema para a conversa com Fábio ———
+            SYSTEM_PROMPT = {
+                "role": "system",
+                "content": """
 Você é o Fábio, um assistente virtual especializado em produtos de investimento ESG da XP Inc., voltado exclusivamente para assessores de investimentos da própria XP.
 
 Seu papel é fornecer orientação técnica, estratégica e educacional sobre a alocação de capital em produtos disponíveis na XP, considerando sempre:
@@ -371,36 +383,13 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
         - “Com a SELIC em 14,75%, esse retorno líquido de 13% mostra competitividade, considerando taxa de 1% a.a.”  
    - Exemplo de frase:  
      “Este fundo investe em empresas com compromisso ESG de nível 1 ou 2, com Selo B, e entregou 15% nos últimos 12 meses, superando a SELIC de 14,75%.”
+                """
+            }
 
-🔍 **FONTES E ATUALIZAÇÕES**  
-- Você pode acessar sites oficiais da XP para dados atualizados de cada fundo:  
-  • https://conteudos.xpi.com.br/esg/  
-  • https://www.xpi.com.br
-
-📂 **BASES DISPONÍVEIS**  
-- Você possui acesso ao DataFrame `df_clients`, que já contém a coluna `Carteira` gerada por `simulate_portfolios()`.
-
-🎯 **ORIENTAÇÃO AO ASSESSOR**  
-- Nunca fale diretamente com o cliente final; dirija-se ao assessor.  
-- Oriente com dados técnicos, não opiniões pessoais.  
-- Para cada faixa de propensão, ajuste o discurso conforme descrito, mas **sempre** apresente o retorno financeiro como principal argumento.
-
-🔧 **SUGESTÕES TÉCNICAS**  
-- Ativar Browser Tool (se disponível).  
-- Atualizar base de clientes a cada rodada.  
-- Manter threads fixos por assessor (usar `thread_id`).  
-- Logar interações (timestamp, ID do assessor, input e resposta).  
-- Fallback: “Produto não consta na base atual. Consulte a plataforma oficial da XP.”
-            """
-        }
-
-        # ——— SUBABA: CONVERSA ———
-        if subaba == "Conversa":
-            # Exibe histórico de mensagens
+            # ——— 4.5) Exibir histórico + input de chat ———
             for msg in st.session_state.mensagens:
                 st.chat_message(msg["role"]).write(msg["content"])
 
-            # Captura input do usuário
             user_input = st.chat_input("Digite sua pergunta para o Fábio:")
 
             if user_input:
@@ -445,7 +434,8 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
                 salvar_historico(st.session_state.usuario, st.session_state.mensagens)
 
-        # ——— SUBABA: PORTAL Informativo ESG ———
+
+        # ——— SUB-ABA “Portal Informativo ESG” — PULAR VALIDAÇÕES DE CLIENTES ———
         elif subaba == "Portal Informativo ESG":
             st.header("📊 Portal Informativo: ESG e Comparações de Investimentos")
             st.markdown(
@@ -459,12 +449,12 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 """
             )
 
-            # Verifica se a chave da API está configurada
+            # Checa se a chave da API está disponível
             if "api_key" not in st.session_state or not st.session_state.api_key:
                 st.error("Para carregar o portal informativo, configure sua chave OpenAI em “Configurar Chave da API OpenAI”.")
                 st.stop()
 
-            # Prompt único que pede o relatório detalhado
+            # Prompt único para gerar o relatório completo
             prompt_portal = (
                 "Você é um economista especializado em investimentos ESG. Gere um relatório técnico em formato de página informativa "
                 "sobre:\n\n"
