@@ -639,8 +639,6 @@ if st.session_state.usuario:
             fig_vencendo.update_layout(
                 height=450,
                 bargap=0.2,
-                plot_bgcolor="#111111",
-                paper_bgcolor="#111111",
                 font_color="#FFFFFF",
                 legend_title_text="Faixa ESG"
             )
@@ -673,8 +671,6 @@ if st.session_state.usuario:
             fig_categoria.update_layout(
                 height=450,
                 bargap=0.25,
-                plot_bgcolor="#111111",
-                paper_bgcolor="#111111",
                 font_color="#FFFFFF",
                 legend_title_text="Faixa ESG"
             )
