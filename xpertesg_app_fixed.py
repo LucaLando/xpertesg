@@ -135,7 +135,7 @@ if not st.session_state.usuario:
 
     with col1:
         # Logo principal
-        st.image("logoxpesg.PNG", use_container_width=True)
+        st.image("logoxpesg.png", use_container_width=True)
         st.markdown("## Login do Assessor")
 
         # Campo de entrada do usuário
