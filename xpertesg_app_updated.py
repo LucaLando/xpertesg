@@ -449,8 +449,9 @@ if st.session_state.usuario:
                     st.session_state.mensagens.append({"role": "assistant", "content": fabio_reply})
             
                     # e) Persiste histórico
-                    salvar_historico(st.session_state.usuario, st.session_state.mensagens)    except Exception as e:
-        st.error(f"Erro interno no Chat com Fábio: {e}")
+                    salvar_historico(st.session_state.usuario, st.session_state.mensagens)    
+        except Exception as e:
+            st.error(f"Erro interno no Chat com Fábio: {e}")
 
     
         with subtab2:
