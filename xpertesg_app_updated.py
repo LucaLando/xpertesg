@@ -461,7 +461,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
 
         # ——— 6) Se o usuário escolheu “Portal Informativo ESG” — CHAMA APENAS A API ———
         elif subaba == "Portal Informativo ESG":
-            st.header("📊 Portal Informativo: ESG e Comparações de Investimentos")
+            st.header("Portal Informativo: ESG e Comparações de Investimentos")
             st.markdown(
                 """
                 Nesta página, o sistema gera automaticamente um relatório informativo sobre **investimentos ESG** na XP.
@@ -469,7 +469,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 - Rentabilidade média líquida dos produtos ESG (2023–2025) comparada com produtos tradicionais.
                 - Discussão sobre custo de oportunidade para investidores entre ESG e não-ESG.
                 - Aplicação do modelo **CAPM** a ativos ESG versus ativos tradicionais.
-                - Tabelas e gráficos resumidos (quando aplicável).
+                - Tabelas e gráficos resumidos.
                 """
             )
 
@@ -493,7 +493,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
                 "Estruture o conteúdo com títulos, subtítulos e formate como um único artigo informativo de economia. Use linguagem acadêmica profissional."
             )
 
-            with st.spinner("Gerando relatório informativo com o ChatGPT..."):
+            with st.spinner("Gerando relatório informativo..."):
                 try:
                     openai.api_key = st.session_state.api_key
 
@@ -516,7 +516,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
 
             # 6.3) Exibe referências sempre abaixo
             st.markdown("---")
-            st.subheader("📚 Referências Utilizadas")
+            st.subheader("Referências Utilizadas")
             st.markdown(
                 """
                 - **ISE B3 vs Ibovespa**  
