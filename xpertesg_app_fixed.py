@@ -571,8 +571,6 @@ if st.session_state.usuario:
             fig_gauge.update_layout(
                 height=400,
                 font=dict(size=16),
-                paper_bgcolor="#111111",
-                plot_bgcolor="#111111",
                 font_color="white"
             )
 
@@ -626,7 +624,7 @@ if st.session_state.usuario:
                 y="Quantidade",
                 color="faixa_propensao",
                 barmode="group",  # ← garante colunas agrupadas
-                title="Clientes com Ativos ESG Próximos do Vencimento",
+                title="Clientes com Ativos Próximos do Vencimento",
                 color_discrete_map={
                     "Alta": ALTO_ESG,
                     "Média": MEDIO_ESG,
