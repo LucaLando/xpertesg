@@ -961,7 +961,7 @@ Você se comunica com linguagem empresarial, técnica e confiável, em linha com
             x=["Assessor", "Média XP"],
             y=[total_assessor, total_xp],
             labels={"x": "Origem", "y": "Valor Total Alocado"},
-            color = "Origem",
+            color = "Valor Total Alocado",
             color_discrete_map={
                     "Assessor": ALTO_ESG,
                     "Média XP": MEDIO_ESG
